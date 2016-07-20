@@ -3,10 +3,10 @@ angular.module('Game').controller('GameController', function($scope, socket, act
   $scope.actions = actions;
   
   $scope.take = function(game) {
-    if (actions.applyMove({kind: 'take'}, game)) socket.update();
+    if ($scope.yourTurn() && actions.applyMove({kind: 'take'}, game)) socket.update();
   }
   $scope.chip = function(game) {
-    if (actions.applyMove({kind: 'chip'}, game)) socket.update();
+    if ($scope.yourTurn() && actions.applyMove({kind: 'chip'}, game)) socket.update();
   }
   $scope.yourTurn = function() {
     return $scope.game.currentPlayer == $scope.meta.you && !$scope.game.finished;
