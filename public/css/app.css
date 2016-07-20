@@ -16,6 +16,9 @@ body {
     user-select: none;
     cursor: default;
 }
+.deck, .jack, .hand {
+    cursor: pointer;
+}
 .public {
     width:50%;
     height:100%;
