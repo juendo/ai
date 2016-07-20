@@ -41,7 +41,7 @@ class MCTS {
 		return root.childIds.map(function(id) {
 			var child = root.getNode(id);
 			child.data('winRatio', child.data('wins') / child.data('plays'));
-			console.log({move: child.data('move'), winRatio: child.data('winRatio')});
+			//console.log({move: child.data('move'), winRatio: child.data('winRatio')});
 			return child;
 		}).reduce(function(prev, current) {
 			return prev.data('winRatio') > current.data('winRatio') ? prev : current;

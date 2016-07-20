@@ -83,9 +83,9 @@ angular.module('Game').controller('GameController', function($scope, socket, act
     if (data.card && action == 'Craftsman')
       var move = {kind: 'fillFromHand', building: index, data: data};
     else if (data.material && action == 'Architect')
-      var move = {kind: 'FillFromStockpile', building: index, data: data, player: playerIndex};
+      var move = {kind: 'fillFromStockpile', building: index, data: data, player: playerIndex};
     else if (data.color && action == 'Architect')
-      var move = {kind: 'FillFromPool', building: index, color: data.color, player: playerIndex};
+      var move = {kind: 'fillFromPool', building: index, color: data.color, player: playerIndex};
 
     if ((typeof move !== 'undefined') && actions.applyMove(move, game)) socket.update();
   }
