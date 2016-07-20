@@ -1,0 +1,525 @@
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    font-family: 'Montserrat';
+}
+* {
+    font-family: 'Montserrat';
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+.public {
+    width:50%;
+    height:100%;
+    float: right;
+}
+.private {
+    width:50%;
+    height: 100%;
+    float: left;
+}
+.card-pile {
+    position: absolute;
+    left: 8%;
+    bottom: 5%;
+    width: 33.333%;
+    height: 25%;
+    border-radius: 20%;
+    color: white;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.user-input {
+    cursor: pointer;
+}
+.outer-deck {
+    width: 20%;
+    position: relative;
+    float: left;
+    height: 100%;
+}
+img.inner-deck {
+    width: 90%;
+    height: 92%;
+    position: absolute;
+    top: 4%;
+    left: 5%;
+    border-radius: 8%;
+    -webkit-filter: invert(13.5%);
+    -moz-filter: invert(13.5%);
+}
+.inner-deck-counter {
+    position: absolute;
+    top: 4%;
+    right: 8%;
+}
+.single-button {
+    width: 90%;
+    height: 92%;
+    position: absolute;
+    top: 4%;
+    left: 5%;
+    border-radius: 8%;
+    border: none;
+    color: white;
+    font-size: 20px;
+}
+.single-button:focus {
+    outline:0;
+}
+.single-button:hover {
+    border-width: 6px;
+}
+.player-component {
+    position: relative;
+    float: right;
+    width: 20%;
+    height: 100%;
+}
+.access-code {
+    -webkit-user-select: initial;
+    -moz-user-select: initial;
+    -ms-user-select: initial;
+    -o-user-select: initial;
+    user-select: initial;
+    text-align:center;
+    cursor: text;
+}
+
+img.hand {
+    height: 92%;
+    border-radius: 5%;
+    margin-top: 4%;
+    margin-bottom: 4%;
+}
+#fixed-container {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    margin: 0px;
+}
+.player-box {
+    height: 68%;
+    float: left;
+    position: relative;
+    z-index: -1;
+    background-color: #333;
+    transition: background-color linear 0.2s;
+}
+.player-box.is-you {
+    z-index: 0;
+}
+.player-box.is-current {
+    background-color: #CCC;
+    transition: background-color linear 0.2s;
+}
+.player-title {
+    width: 100%;
+    height: 7%;
+    position: relative;
+
+    background-color: #222;
+    text-align: center;
+    /*box-shadow: 2px 0px 5px #AAA;*/
+    color: white;
+}
+.player-header {
+    height: 100%;
+    float: left;
+    position: relative;
+}
+.player-name {
+    float: left;
+    text-align: left;
+    position: relative;
+    padding:5px;
+    top: 50%;
+    margin-left: 5%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+.player-influence {
+    float: left;
+    color: #222;
+    background-color: white;
+    border-radius: 5px;
+}
+.player-vault {
+    float: right;
+}
+.player-vault, .player-influence {
+    text-align: center;
+    position: relative;
+    padding:5px;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+.player-action {
+    display: inline-block;
+    border-radius: 5px;padding:5px;
+    position: relative;
+    margin: auto;
+    clear: none;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+.player-action-container {
+    position: absolute;
+    width: 95%;
+    height: 100%;
+    margin-left: 5%;
+}
+.score-box {
+    width: 95%;
+    height: 100%;
+    float: right;
+    position: absolute;
+    top: 0%;
+    margin-left: 5%;
+    color: white;
+    text-align: center;
+    z-index: 1;
+}
+.score {
+    position: absolute;
+    width: 100%;
+    height: 95%;
+    text-align: center;
+    font-size: 50px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+.player-clientele, .player-clientele-shadow {
+    height: 100%;
+    width: 5%;
+
+    position: relative;
+    background-color: #222;
+    float: left;
+}
+.player-clientele-shadow {
+    /*box-shadow: 0px 0px 5px #AAA;*/
+    margin-right: -5%;
+}
+.client {
+    width: 100%;
+    max-height: 4%;
+    float: left;
+    display: inline;
+    border-radius: 32%;
+    border-style: solid;
+    border-color: #222;
+}
+.player-building-area {
+    height: auto;
+    display: inline-block;
+    padding: 1%;
+    max-width: 31.66667%;
+}
+.building {
+    width: 100%;
+    height: 100%;
+    border-radius: 5%;
+    border-style:solid;
+    border-width: 0px;
+    transition: border-width linear 0.2s, -webkit-filter linear 0.2s;
+}
+.building.is-relevant {
+    border-width: 5px;
+}
+.building.drag-enter {
+    -webkit-filter: brightness(90%);
+    -moz-filter: brightness(90%);
+}
+.materials-holder {
+    width:90%;
+    margin-left: 5%;
+    padding:0px;
+    height:10px;
+    /*box-shadow: 0px 0px 5px #AAA;*/
+}
+.materials {
+    
+    height:100%;
+    background-color:white;
+}
+.material {
+    height:10px;float:left;
+}
+.stockpile {
+    bottom: 0px; 
+    margin-left:5%; 
+    width:95%;
+    height:5%;
+    position:absolute;
+    text-align: center;
+    background-color: #444;
+    transition: background-color linear 0.2s;
+}
+.stockpile.is-current {
+    background-color: #DDD;
+    transition: background-color linear 0.2s;
+}
+.vault {
+    bottom: 0px;
+    width:100%;
+    height:5.263%;
+    position:absolute;
+    text-align: center;
+    background-color: #444;
+    transition: background-color linear 0.2s;
+}
+.vault.is-current {
+    background-color: #DDD;
+    transition: background-color linear 0.2s;
+}
+.pending {
+    background-color: none; 
+    top: 0px; 
+    margin-left:5%; 
+    width:95%;
+    height:3%;
+    text-align: center;
+}
+.pending-center {
+    display: inline-block;
+    height: 100%;
+}
+.pending-card {
+    width:20px;
+    height:100%;
+    margin-left: 2px;
+    margin-right: 2px;
+    float:left;
+    border-bottom-left-radius: 32%;
+    border-bottom-right-radius: 32%;
+}
+.stockpile-material {
+    max-width: 20px;
+    height: 100%;
+    border-top-right-radius: 32%;
+    display: inline-block;
+    border-top-left-radius: 32%;
+}
+.stockpile-spacing {
+    max-width: 4px;
+    height: 100%;
+    display: inline-block;
+}
+.stockpile-spacing.end {
+    max-width: 2px;
+}
+.stockpile-center {
+    height: 60%;
+    display: inline-block;
+    width: 100%;
+}
+.stockpile-padding {
+    height: 40%;
+    width: 100%;
+}
+#bottom-bar {
+    width: 100%;
+    height: 25%;
+    /*background-color: #eedfe5;*/
+    background-color: #222;
+    clear: both;
+    /*box-shadow:2px 0px 5px #AAA;
+*/    position: relative;
+}
+.hand {
+    position:absolute; 
+    bottom:0;
+}
+.pool {
+    float: right;
+    height: 100%;
+    width: 10%;
+    border: 4px;
+    border-color: #222;
+    border-style: solid;
+    position: absolute;
+    right: 20%;
+}
+.pool-counter {
+    width: 50%;
+    height: 33.333%;
+    float: left;
+    text-align: center;
+    font-size: 175%;
+    border: 4px;
+    border-color: #222;
+    border-radius: 20%;
+    border-style: solid;
+}
+.pool-counter:focus {
+    outline:0;
+}
+.pool-counter:hover {
+    border-width: 6px;
+}
+img.hand.front {
+    z-index: 1;
+}
+img.hand.drag-over {
+    opacity: 0;
+}
+.jack, .deck {
+    position: absolute;
+    overflow: hidden;
+}
+.jack {
+    bottom: 4%;
+    height: 92%;
+    left: 90.5%;
+    border-width: 0px;
+    border-radius: 8%;
+    width: 9%;
+    -webkit-filter: invert(13.5%);
+    -moz-filter: invert(13.5%);
+}
+.deck {
+    height: 92%;
+    bottom: 4%;
+    top: 4%;
+    left: 80.5%;
+    width: 9%;
+    border-width: 0px;
+    border-radius: 8%;
+    -webkit-filter: invert(13.5%);
+    -moz-filter: invert(13.5%);
+}
+.deck:hover, .jack:hover, img.inner-deck:hover {
+    -webkit-filter: invert(0%);
+    -moz-filter: invert(0%);
+}
+.hand {
+    transition: bottom linear 0.06s, opacity linear 0.2s, -webkit-filter linear 0.06s, left linear 0.06s;
+}
+/*
+.deck {
+    border-radius: 11%;
+    border-style: solid;
+    width: 10%;
+    border-color: #222;
+    border-width: 8px;
+    overflow: hidden;
+    float: right;
+    height: 100%;
+    /* position: absolute; */
+    /* margin-bottom: 4%; */
+    /* margin-top: 4%; 
+    background-color: none;
+}
+*/
+.skip {
+    width: 9%;
+    height: 44%;
+    bottom: 4%;
+    background-color: #222;
+    color: white;
+    outline: none;
+    border: none;
+    /* border-style: solid; */
+    border-color: #222;
+    border-radius: 8%;
+    /* float: right; */
+    font-size: 16px;
+    right: 30.5%;
+    position: absolute;
+}
+.skip:hover {
+    background-color: black;
+}
+.skip.nudge {
+    bottom: none;
+    top: 4%;
+}
+#hand {
+    float:left;
+    position: relative;
+    height: 100%;
+    display: block;
+}
+.glory-to-rome {
+    width: 95%;
+    height: 100%;
+    left: 5%;
+    position: absolute;
+    text-align: center;
+    z-index: -1;
+}
+.glory-text {
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    height: 95%;
+    color: inherit;
+    color: transparent;
+}
+.glory-text.gtr-show {
+    opacity: 1;
+}
+.glory-text.gtr-hide {
+    color: #222;
+    transition: all linear 1s;
+    -ms-transform: scale(3,3); /* IE 9 */
+    -webkit-transform: scale(3,3); /* Safari */
+    transform: scale(3,3);
+    opacity: 0;
+}
+.jack-counter {
+    position: absolute;
+    padding: 12px;
+    padding-left:0px;
+    right: 0%;
+    text-align: center;
+    color: white;
+    background-color: transparent;
+    /* display: none; */
+    text-align: right;
+}
+.deck-counter {
+    position: absolute;
+    /* padding: 8px; */
+    padding: 12px;
+    padding-left:0px;
+    text-align: center;
+    right: 10%;
+    color: white;
+    background-color: transparent;
+    text-align: right;
+}
+.draw-one {
+    position: absolute;
+    left: 82.5%;
+    bottom: 4%;
+    border-radius: 10%;
+    outline: none;
+    width: 5%;
+    font-size: 12px;
+    border: none;
+    background-color: white;
+    color: #222;
+    opacity: 0.5;
+}
+.draw-one:hover {
+    opacity: 1;
+}

@@ -1,0 +1,16 @@
+doctype html
+html
+  head
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js")
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js")
+    link(href='https://fonts.googleapis.com/css?family=Montserrat', rel='stylesheet', type='text/css')
+    link(rel='stylesheet', href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css")
+    link(rel='stylesheet', href='/css/home.css')
+  body(style='background-color: white;')
+    .container
+      .row
+        .Absolute-Center.is-Responsive
+          .col-sm-12.col-md-10.col-md-offset-1
+            for game in games
+              .form-group.game-button
+                a.btn.btn-def.btn-block.setup#new-game(href='#{game.link}', style='background-color:#{game.color};') #{game.name}

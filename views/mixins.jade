@@ -1,0 +1,65 @@
+mixin heading
+  .player-title
+    .player-header(
+      ng-repeat='player in game.players', 
+      ng-style='{"width":100/game.players.length + "%", "font-size": (40/game.players.length > 15 ? 15 : 40/game.players.length) + "px", "background-color": "#{color}"}'
+    )
+      if block
+        block
+
+mixin player-box
+  .player-box(
+    ng-repeat='player in game.players',
+    ng-class='{ "is-you" : player == you(), "is-current" : player == game.players[game.currentPlayer] }',
+    ng-style='{"width": 100 / game.players.length + "%", "background-color" : player == game.players[game.currentPlayer] ? "#{active}" : "#{inactive}" }'
+  )
+    if block
+      block
+
+mixin player-separator
+  .player-clientele(ng-style='{"background-color": "#{color}"}')
+    if block
+      block
+
+mixin deck(src, counter, click)
+  .outer-deck
+    img.inner-deck.user-input(
+      ng-src='#{src}',
+      ng-click='#{click}'
+    )
+    .inner-deck-counter
+      | {{ #{counter} }}
+    if block
+      block
+
+mixin bottom
+  #bottom-bar(ng-style='{"background-color": "#{color}"}')
+    if block
+      block
+
+mixin single-button(click, text, color)
+  .player-component
+      button.single-button(
+        ng-click='#{click}',
+        ng-style='{"background-color":"#{color}"}'
+      )
+        | #{text}
+
+mixin card-pile(text, color, click)
+  .card-pile(
+    ng-style='{"background-color":"#{color}"}',
+    ng-click='#{click}'
+  )
+    | {{ #{text} }}
+
+mixin private
+  .private
+    if block
+      block
+
+mixin public
+  .public
+    if block
+      block
+
+block game

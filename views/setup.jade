@@ -1,0 +1,27 @@
+.row(
+  ng-if='game.created'
+)
+  .Absolute-Center.is-Responsive
+    .col-sm-12.col-md-10.col-md-offset-1
+      .form-group
+        .access-code
+          | {{ game.room }}
+      .form-group
+        div(
+          ng-repeat='player in game.players track by $index'
+        ) 
+          | {{ player.name }}
+      .form-group.game-button
+        button.setup.btn.btn-def.btn-block(
+          type='button', 
+          ng-click='start(game)'
+        )
+          | Start Game
+      .form-group.game-button
+        button.setup.btn.btn-def.btn-block(
+          type='button', 
+          ng-click='addAI(game)'
+        )
+          | Add AI
+      .form-group.game-button
+        button.setup.btn.btn-def.btn-block#join-game(type='button') Leave Game

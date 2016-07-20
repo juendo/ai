@@ -1,0 +1,19 @@
+doctype html
+html
+  include ./head.jade
+  body(
+    ng-app='Game',
+    style='background-color:#{color}'
+  )
+    .container(
+      ng-if='!game.started',
+      ng-controller='setupController as setup'
+    )
+      include ./create.jade
+      include ./setup.jade
+
+    #fixed-container(
+      ng-if='game.started',
+      ng-controller='GameController as controller'
+    )
+      |!{ view }

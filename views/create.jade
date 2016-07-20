@@ -1,0 +1,47 @@
+.row(
+  ng-if='!game.created'
+)
+  .Absolute-Center.is-Responsive
+    .col-sm-12.col-md-10.col-md-offset-1
+      .form-group.game-button
+        button.btn.btn-def.btn-block.setup#new-game(type='button') New Game
+      .form-group.game-button
+        button.btn.btn-def.btn-block.setup#join-game(type='button') Join Game
+      form#new-game-form(action='', hidden)
+        .form-group
+          input.form-control#create-name(
+            type='text', 
+            name='name', 
+            placeholder='Enter your name',
+            ng-model='game.name'
+          )
+        .form-group
+          button.btn.btn-def.btn-block.setup#create(
+            type='button',
+            ng-click='createGame(game, game.players[meta.you])'
+          ) 
+            | Create
+        .form-group
+          button.btn.btn-def.btn-block.setup.back(type='button') Back
+      form#join-game-form(action='', hidden)
+        .form-group
+          input.form-control#access-code(
+            type='text', 
+            name='name',
+            placeholder='Enter access code',
+            ng-model='game.room'
+          )
+        .form-group
+          input.form-control#join-name(
+            type='text',
+            name='name', 
+            placeholder='Enter your name',
+            ng-model='game.name'
+          )
+        .form-group
+          button.btn.btn-def.btn-block.setup#join(
+            type='button'
+            ng-click='joinGame(game)'
+          ) Join
+        .form-group
+          button.btn.btn-def.btn-block.setup.back(type='button') Back

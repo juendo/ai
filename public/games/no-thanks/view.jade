@@ -1,0 +1,28 @@
+extends ../../../views/mixins.jade
+
+block game
+  +heading
+    .player-name
+      span(style='color:#FFF')
+        | {{ player.name.toUpperCase() }}
+  +player-box
+    +player-separator
+    .player-building-area(
+      ng-if='!game.finished',
+      ng-repeat='card in player.cards track by $index',
+      ng-style='{ "max-width" : (game.players.length == 2 ? 23.75 : 31.666667) + "%", "width" : buildingWidth(player.cards.length) + "%" }'
+    )
+      img.building(
+        ng-src='/games/no-thanks/images/{{card}}.png'
+      )
+    .score-box(
+      ng-if='game.finished'
+    )
+      .score
+        | {{ actions.score(player) + " POINTS"}}
+  +bottom
+    +private
+      +single-button('chip(game)', '{{ you().chips }}', 'red')
+    +public
+      +deck('/games/no-thanks/images/{{game.currentCard.value}}.png', 'game.deck.length', 'take(game)')
+        +card-pile('game.currentCard.chips', 'red', '')

@@ -1,0 +1,1 @@
+angular.module('Game', ['Game.directives', 'ngDraggable']);
