@@ -1,3 +1,2 @@
-#glory to rome
+#A Framework for Online Board Games
 
-Experiment with Angular JS and Socket IO, starting from https://github.com/btford/angular-socket-io-seed
