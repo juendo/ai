@@ -40,6 +40,8 @@ class LegalMoves {
       return this.think();
       case 'Sewer':
       return this.sewer();
+      case 'Prison':
+      return this.prison();
       default:
       return [{kind: 'skip'}];
     }
@@ -159,9 +161,7 @@ class LegalMoves {
     if (!this.player.actions[0].usedFountain) {
       for (var i = 0; i < this.player.hand.length; i++) {
         for (var j = 0; j < this.player.buildings.length; j++) {
-          if (
-              this.player.hand[i].color == this.player.buildings[j].siteColor
-          && !this.player.buildings[j].done) {
+          if (this.canAddToStructure(this.player.hand[i].color, this.player.buildings[j], this.game.currentPlayer, this.game.currentPlayer)) {
             moves.push({kind: 'fillFromHand', hand: i, building: j, data: {card: this.player.hand[i], index: i}});
           }
         }
@@ -169,7 +169,7 @@ class LegalMoves {
       // check if can lay foundation
       for (var i = 0; i < this.player.hand.length; i++) {
         if (this.player.hand[i].color !== 'black') {
-          if (this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length) {
+          if (this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length || (this.game.sites[this.player.hand[i].color] > 0 && ((this.player.actions[1] && this.player.actions[1].kind === this.player.actions[0].kind) || this.actions.hasAbilityToUse('Tower', this.player)))) {
             var alreadyHas = false;
             this.player.buildings.forEach(function(b) {
               if (b.name === this.player.hand[i].name) alreadyHas = true;
@@ -185,14 +185,12 @@ class LegalMoves {
     } else {
       var i = this.player.hand.length - 1;
       for (var j = 0; j < this.player.buildings.length; j++) {
-        if (
-            this.player.hand[i].color == this.player.buildings[j].siteColor
-        && !this.player.buildings[j].done) {
+        if (this.canAddToStructure(this.player.hand[i].color, this.player.buildings[j], this.game.currentPlayer, this.game.currentPlayer)) {
           moves.push({kind: 'fillFromHand', hand: i, building: j, data: {card: this.player.hand[i], index: i}});
         }
       }
       if (this.player.hand[i].color !== 'black') {
-        if (this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length) {
+        if (this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length || (this.game.sites[this.player.hand[i].color] > 0 && ((this.player.actions[1] && this.player.actions[1].kind === this.player.actions[0].kind) || this.actions.hasAbilityToUse('Tower', this.player)))) {
           var alreadyHas = false;
           this.player.buildings.forEach(function(b) {
             if (b.name === this.player.hand[i].name) alreadyHas = true;
@@ -212,19 +210,29 @@ class LegalMoves {
     var moves = [];
     if (!this.player.actions[0].usedRegularArchitect) {
       // check if can add anything to structures
+      var considered = {'yellow': false, 'green': false, 'red': false, 'grey': false, 'blue': false, 'purple': false};
       for (var i = 0; i < this.player.stockpile.length; i++) {
         for (var j = 0; j < this.player.buildings.length; j++) {
-          if (
-              this.player.stockpile[i] == this.player.buildings[j].siteColor
-          && !this.player.buildings[j].done) {
+          if (!considered[this.player.stockpile[i]] && this.canAddToStructure(this.player.stockpile[i], this.player.buildings[j], this.game.currentPlayer, this.game.currentPlayer)) {
             moves.push({kind: 'fillFromStockpile', stockpile: i, building: j, data: {material: this.player.stockpile[i], index: i}, player: this.game.currentPlayer});
+            considered[this.player.stockpile[i]] = true;
           }
         }
+      }
+      //archway
+      if (this.actions.hasAbilityToUse('Archway', this.player)) {
+        this.colors.forEach(function(color) {
+          for (var j = 0; j < this.player.buildings.length; j++) {
+            if (this.game.pool[color] && this.canAddToStructure(color, this.player.buildings[j], this.game.currentPlayer, this.game.currentPlayer)) {
+              moves.push({kind: 'fillFromPool', color: color, building: j, player: this.game.currentPlayer});
+            }
+          }
+        }, this);
       }
       // check if can lay foundation
       for (var i = 0; i < this.player.hand.length; i++) {
         if (this.player.hand[i].color !== 'black') {
-          if (this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length) {
+          if (this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length || (this.game.sites[this.player.hand[i].color] > 0 && ((this.player.actions[1] && this.player.actions[1].kind === this.player.actions[0].kind) || this.actions.hasAbilityToUse('Tower', this.player)))) {
             var alreadyHas = false;
             this.player.buildings.forEach(function(b) {
               if (b.name === this.player.hand[i].name) alreadyHas = true;
@@ -234,6 +242,34 @@ class LegalMoves {
         }
       }
     }
+
+    if (this.actions.hasAbilityToUse('Stairway', this.player) && !this.player.actions[0].usedStairway) {
+      // check if can add anything to structures
+      var considered = {'yellow': false, 'green': false, 'red': false, 'grey': false, 'blue': false, 'purple': false};
+      for (var i = 0; i < this.player.stockpile.length; i++) {
+        for (var k = 0; k < this.game.players.length; k++) {
+          for (var j = 0; j < this.game.players[k].buildings.length; j++) {
+            if (!considered[this.player.stockpile[i]] && this.game.currentPlayer !== k && this.canAddToStructure(this.player.stockpile[i], this.game.players[k].buildings[j], this.game.currentPlayer, k)) {
+              moves.push({kind: 'fillFromStockpile', stockpile: i, building: j, data: {material: this.player.stockpile[i], index: i}, player: k});
+              considered[this.player.stockpile[i]] = true;
+            }
+          }
+        }
+      }
+      //archway
+      if (this.actions.hasAbilityToUse('Archway', this.player)) {
+        this.colors.forEach(function(color) {
+          for (var k = 0; k < this.game.players.length; k++) {
+            for (var j = 0; j < this.game.players[k].buildings.length; j++) {
+              if (k !== this.game.currentPlayer && this.game.pool[color] && this.canAddToStructure(color, this.game.players[k].buildings[j], this.game.currentPlayer, k)) {
+                moves.push({kind: 'fillFromPool', color: color, building: j, player: k});
+              }
+            }
+          }
+        }, this);
+      }
+    }
+
     moves.push({kind:'skip'});
 
     return moves;
@@ -255,10 +291,15 @@ class LegalMoves {
   romeDemands() {
     //palisade and wall
     var moves = [];
-    var color = this.player.actions[0].material;
-    for (var i = 0; i < this.player.hand.length; i++) {
-      if (this.player.hand[i].color == color) {
-        moves.push({kind: 'romeDemands', index: i, data: {index: i, card: this.player.hand[i]}});
+
+    var immune = this.actions.hasAbilityToUse('Wall', this.player) || (this.actions.hasAbilityToUse('Palisade', this.player) && !this.actions.hasAbilityToUse('Bridge', this.game.players[this.player.actions[0].demander]));
+    
+    if (!immune) {
+      var color = this.player.actions[0].material;
+      for (var i = 0; i < this.player.hand.length; i++) {
+        if (this.player.hand[i].color == color) {
+          moves.push({kind: 'romeDemands', index: i, data: {index: i, card: this.player.hand[i]}});
+        }
       }
     }
     if (moves.length === 0) moves.push({kind: 'skip'});
@@ -289,6 +330,39 @@ class LegalMoves {
     }
     moves.push({kind: 'skip'});
     return moves;
+  }
+
+  prison() {
+    var moves = [];
+    for (var k = 0; k < this.game.players.length; k++) {
+      for (var j = 0; j < this.game.players[k].buildings.length; j++) {
+        // check if player already has that building
+        if (k !== this.game.currentPlayer) {
+          var doesntHave = true;
+          this.player.buildings.forEach(function(building) {
+            if (building.name === this.game.players[k].buildings[j].name) {
+              doesntHave = false;
+            }
+          }, this);
+          if (this.game.players[k].buildings[j].done && doesntHave) {
+            moves.push({kind: 'prison', building: this.game.players[k].buildings[j], opponent: this.game.players[k], index: j});
+          }
+        }
+      }
+    }
+    moves.push({kind: 'skip'});
+    return moves;
+  }
+
+  canAddToStructure(color, structure, player, owner) {
+    if (color === 'black') return false;
+    else if ((player === owner) === (structure.done)) return false;
+    else if (player !== owner && this.game.players[player].publicBuildings.indexOf(structure.name) >= 0) return false;
+    else if (color === structure.siteColor) return true;
+    else if (color === 'yellow' && this.actions.hasAbilityToUse('Tower', this.game.players[player])) return true;
+    else if (structure.siteColor === 'blue' && this.actions.hasAbilityToUse('Road', this.game.players[player])) return true;
+    else if (!structure.done && color === 'purple' && this.actions.hasAbilityToUse('Scriptorium', this.game.players[player])) return true;
+    else return false;
   }
 }
 

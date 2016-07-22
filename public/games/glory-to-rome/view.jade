@@ -1,185 +1,182 @@
 extends ../../../views/mixins.jade
 
-block game
-  +heading
-    .player-name
-        span(style='color:#F7B628')
-            | {{ $index == game.leader ? 'L ' : '' }}
-        span(style='color:#AAA')
-            | {{ $index == game.leader ? '| ' : '' }}
-        span(style='color:#FFF')
-            | {{ player.name.toUpperCase() }} 
-        span(style='color:#AAA')
-            | | 
-        span(style='color:#FFF')
-            | {{ actions.influence(player) }} 
-        br
-        span(style='color:#AAA')
-            | {{ player.hand.length }} CARDS
-    .player-action-container
-        .player-action(style='color:#{{(player.actions[0] != undefined && actionColors[player.actions[0].kind] == "FFF") ? "000" : "FFF"}};background-color:#{{player.actions[0] != undefined ? actionColors[player.actions[0].kind] : "222"}}')
-            | {{ player.actions[0].description }}{{ actionNumber(player) > 1 && player.actions[0].kind !== "Rome Demands" ? " × " + actionNumber(player) : "" }}
-    .player-vault
-        span(style='color:#FFF')
-            | {{ player.vault.length }} 
-        span(style='color:#AAA')
-            | / {{ actions.vaultLimit(player) }}
-  +player-box
-    .glory-to-rome
-      .glory-text(
-        ng-class='{"gtr-hide": player.glory1, "gtr-show": !player.glory1}'
+block heading
+  .player-name
+      span(style='color:#F7B628')
+          | {{ $index == game.leader ? 'L ' : '' }}
+      span(style='color:#AAA')
+          | {{ $index == game.leader ? '| ' : '' }}
+      span(style='color:#FFF')
+          | {{ player.name.toUpperCase() }} 
+      span(style='color:#AAA')
+          | | 
+      span(style='color:#FFF')
+          | {{ actions.influence(player) }} 
+      br
+      span(style='color:#AAA')
+          | {{ player.hand.length }} CARDS
+  .player-action-container
+      .player-action(style='color:#{{(player.actions[0] != undefined && actionColors[player.actions[0].kind] == "FFF") ? "000" : "FFF"}};background-color:#{{player.actions[0] != undefined ? actionColors[player.actions[0].kind] : "222"}}')
+          | {{ player.actions[0].description }}{{ actionNumber(player) > 1 && player.actions[0].kind !== "Rome Demands" ? " × " + actionNumber(player) : "" }}
+  .player-vault
+      span(style='color:#FFF')
+          | {{ player.vault.length }} 
+      span(style='color:#AAA')
+          | / {{ actions.vaultLimit(player) }}
+
+
+
+block player
+  +player-separator
+    .client(
+      ng-repeat='x in getArray(actions.clienteleLimit(player)) track by $index',
+      ng-style='{ "background-color" : "#" + (player.clientele[$index] ? actionColors[player.clientele[$index]] : "333"), "height" : 100 / actions.clienteleLimit(player) + "%" }'
+    )
+  .pending
+    .pending-center
+      .pending-card(
+        ng-repeat='card in player.pending track by $index',
+        ng-click='yourTurn() && $parent.$index == meta.you && pendingClicked(you().actions[0].kind, {index: $index, card: card}, game)',
+        ng-style='{ "background-color" : "#" + colors[card.color] }'
       )
-        | GLORY TO ROME
-    .glory-to-rome
-      .glory-text(
-        ng-class='{"gtr-hide": player.glory2, "gtr-show": !player.glory2}'
+  .player-building-area(
+    ng-if='!game.finished',
+    ng-repeat='building in player.buildings track by $index',
+    ng-style='{ "max-width" : (game.players.length == 2 ? 23.75 : 31.666667) + "%", "width" : buildingWidth(player.buildings.length + (player.publicBuildings ? player.publicBuildings.length : 0)) + "%" }'
+  )
+    img.building(
+      ng-drop='true', 
+      ng-drop-success='(yourTurn() && ($parent.$parent.$index == meta.you || actions.actions.hasAbilityToUse("Stairway", you()))) ? dragEnded(you().actions[0].kind, $data, game, $index, $parent.$parent.$index) : null',
+      ng-src='games/glory-to-rome/images/cards/{{ building.name }}.png',
+      ng-alt='{{ building.name }}',
+      ng-click='yourTurn() && buildingClicked(you().actions[0].kind, building, $parent.$parent.$index == meta.you, player, $index, game)',
+      ng-style='{ "border-color" : "#" + (player.actions[0] ? actionBorderColors[player.actions[0].kind] : "000") }',
+      ng-class='{ "is-relevant" : $parent.$parent.$index == game.currentPlayer && actions.hasAbilityToUse(building.name, player) && player.actions[0] && relevantAction(building.name, player.actions[0]) }'
+    )
+    .materials-holder(
+      ng-style='{ "background" : "repeating-linear-gradient(-45deg, #FFF, #FFF 7px, #" + colors[building.siteColor] + " 7px, #" + colors[building.siteColor] + " 14px)" }',
+      ng-if='!building.done'
+    )
+      .materials(
+        ng-style='{ "width" : 17 * colorValues[building.siteColor] + "%" }'
       )
-        | GLORY TO ROME
-    +player-separator()
-      .client(
-        ng-repeat='x in getArray(actions.clienteleLimit(player)) track by $index',
-        ng-style='{ "background-color" : "#" + (player.clientele[$index] ? actionColors[player.clientele[$index]] : "333"), "height" : 100 / actions.clienteleLimit(player) + "%" }'
-      )
-    .pending
-      .pending-center
-        .pending-card(
-          ng-repeat='card in player.pending track by $index',
-          ng-click='yourTurn() && $parent.$index == meta.you && pendingClicked(you().actions[0].kind, {index: $index, card: card}, game)',
-          ng-style='{ "background-color" : "#" + colors[card.color] }'
+        .material(
+          ng-repeat='material in building.materials track by $index',
+          ng-style='{ "width" : 100 / colorValues[building.siteColor] + "%", "background-color" : "#" + colors[material] }'
         )
-    .player-building-area(
-      ng-if='!game.finished',
-      ng-repeat='building in player.buildings track by $index',
-      ng-style='{ "max-width" : (game.players.length == 2 ? 23.75 : 31.666667) + "%", "width" : buildingWidth(player.buildings.length + (player.publicBuildings ? player.publicBuildings.length : 0)) + "%" }'
+  .player-building-area(
+    ng-if='!!player.publicBuildings && !game.finished && !actions.hasAbilityToUseWithoutPublicBuildings(building, player)',
+    ng-repeat='building in player.publicBuildings track by $index',
+    ng-style='{ "max-width" : (game.players.length == 2 ? 23.75 : 31.666667) + "%", "width" : buildingWidth(player.buildings.length + (player.publicBuildings ? player.publicBuildings.length : 0)) + "%" }'
+  )
+    img.building(
+      ng-src='games/glory-to-rome/images/cards/{{ building }}.png',
+      ng-alt='{{ building }}',
+      ng-click='yourTurn() && buildingClicked(you().actions[0].kind, building, true, player, $index, game)',
+      ng-style='{ "border-color" : "#" + (player.actions[0] ? actionBorderColors[player.actions[0].kind] : "000"), "opacity" : "0.5" }',
+      ng-class='{ "is-relevant" : $parent.$parent.$index == game.currentPlayer && actions.hasAbilityToUse(building, player) && player.actions[0] && relevantAction(building, player.actions[0]) }'
     )
-      img.building(
-        ng-drop='true', 
-        ng-drop-success='(yourTurn() && ($parent.$parent.$index == meta.you || actions.actions.hasAbilityToUse("Stairway", you()))) ? dragEnded(you().actions[0].kind, $data, game, $index, $parent.$parent.$index) : null',
-        ng-src='games/glory-to-rome/images/cards/{{ building.name }}.png',
-        ng-alt='{{ building.name }}',
-        ng-click='yourTurn() && buildingClicked(you().actions[0].kind, building, $parent.$parent.$index == meta.you, player, $index, game)',
-        ng-style='{ "border-color" : "#" + (player.actions[0] ? actionBorderColors[player.actions[0].kind] : "000") }',
-        ng-class='{ "is-relevant" : $parent.$parent.$index == game.currentPlayer && actions.hasAbilityToUse(building.name, player) && player.actions[0] && relevantAction(building.name, player.actions[0]) }'
-      )
-      .materials-holder(
-        ng-style='{ "background" : "repeating-linear-gradient(-45deg, #FFF, #FFF 7px, #" + colors[building.siteColor] + " 7px, #" + colors[building.siteColor] + " 14px)" }',
-        ng-if='!building.done'
-      )
-        .materials(
-          ng-style='{ "width" : 17 * colorValues[building.siteColor] + "%" }'
-        )
-          .material(
-            ng-repeat='material in building.materials track by $index',
-            ng-style='{ "width" : 100 / colorValues[building.siteColor] + "%", "background-color" : "#" + colors[material] }'
-          )
-    .player-building-area(
-      ng-if='!!player.publicBuildings && !game.finished && !actions.hasAbilityToUseWithoutPublicBuildings(building, player)',
-      ng-repeat='building in player.publicBuildings track by $index',
-      ng-style='{ "max-width" : (game.players.length == 2 ? 23.75 : 31.666667) + "%", "width" : buildingWidth(player.buildings.length + (player.publicBuildings ? player.publicBuildings.length : 0)) + "%" }'
-    )
-      img.building(
-        ng-src='games/glory-to-rome/images/cards/{{ building }}.png',
-        ng-alt='{{ building }}',
-        ng-click='yourTurn() && buildingClicked(you().actions[0].kind, building, true, player, $index, game)',
-        ng-style='{ "border-color" : "#" + (player.actions[0] ? actionBorderColors[player.actions[0].kind] : "000"), "opacity" : "0.5" }',
-        ng-class='{ "is-relevant" : $parent.$parent.$index == game.currentPlayer && actions.hasAbilityToUse(building, player) && player.actions[0] && relevantAction(building, player.actions[0]) }'
-      )
-    .score-box(
-      ng-if='game.finished'
-    )
-      .score
-        | {{ player.winner ? "GLORY TO " + player.name.toUpperCase() : actions.score(player) + " POINTS"}}
-      .vault(
-        ng-class='{ "is-current" : player == game.players[game.currentPlayer] }'
-      )
-        .stockpile-padding
-        .stockpile-center
-          .stockpile-spacing.end(
-            ng-if='player.vault.length > 0',
-            ng-style='{ "width" : 16.666667 / (player.vault.length * 2) + "%" }'
-          )
-          .stockpile-material(
-            ng-if='player.vault.length > 0',
-            ng-repeat-start='material in player.vault track by $index',
-            ng-style='{ "background-color" : "#" + colors[material.color], "width" : 83.333333 / player.vault.length + "%" }'
-          )
-          .stockpile-spacing.end(
-            ng-repeat-end='',
-            ng-class='{ "end" : $index == player.vault.length - 1 }',
-            ng-style='{ "width" : 16.666667 / (player.vault.length * ($index == player.vault.length - 1 ? 2 : 1)) + "%" }'
-          )
-    .stockpile(
+  .score-box(
+    ng-if='game.finished'
+  )
+    .score
+      | {{ player.winner ? "GLORY TO " + player.name.toUpperCase() : actions.score(player) + " POINTS"}}
+    .vault(
       ng-class='{ "is-current" : player == game.players[game.currentPlayer] }'
     )
       .stockpile-padding
       .stockpile-center
         .stockpile-spacing.end(
-          ng-if='player.stockpile.length > 0',
-          ng-style='{ "width" : 16.666667 / (player.stockpile.length * 2) + "%" }'
+          ng-if='player.vault.length > 0',
+          ng-style='{ "width" : 16.666667 / (player.vault.length * 2) + "%" }'
         )
         .stockpile-material(
-          ng-if='player.stockpile.length > 0',
-          ng-repeat-start='material in player.stockpile track by $index',
-          ng-drag='$parent.$parent.$index == meta.you',
-          ng-drag-data='{index: $index, material: material}', 
-          ng-click='yourTurn() && $parent.$parent.$index == meta.you && stockpileClicked(you().actions[0].kind, {index: $index, material: material}, game)', 
-          ng-style='{ "background-color" : "#" + colors[material], "width" : 83.333333 / player.stockpile.length + "%" }'
+          ng-if='player.vault.length > 0',
+          ng-repeat-start='material in player.vault track by $index',
+          ng-style='{ "background-color" : "#" + colors[material.color], "width" : 83.333333 / player.vault.length + "%" }'
         )
         .stockpile-spacing.end(
           ng-repeat-end='',
-          ng-class='{ "end" : $index == player.stockpile.length - 1 }',
-          ng-style='{ "width" : 16.666667 / (player.stockpile.length * ($index == player.stockpile.length - 1 ? 2 : 1)) + "%" }'
+          ng-class='{ "end" : $index == player.vault.length - 1 }',
+          ng-style='{ "width" : 16.666667 / (player.vault.length * ($index == player.vault.length - 1 ? 2 : 1)) + "%" }'
         )
-  #bottom-bar
-    #hand(
-      ng-hover-hand=''
-    )
-      img.hand(
-        ng-hover-card
-        ng-drag='true', 
-        ng-drag-data='{index: $index, card: c}', 
-        ng-click='yourTurn() && handClicked(you(), game, {index: $index, card: c}, you().actions[0].kind)', 
-        ng-repeat='c in you().hand track by $index', 
-        style='left: {{ $index * spacing(you().hand.length) }}px;bottom:{{ 4 + (c.selected ? 4 : 0) }}%;{{ isDragging ? "height:92%;" : ""}};{{ c.selected ? "-webkit-filter:brightness(90%);" : "" }}',
-        ng-src='games/glory-to-rome/images/cards/{{ c.name }}.png', 
-        ng-alt='{{ c.name }}'
+  .stockpile(
+    ng-class='{ "is-current" : player == game.players[game.currentPlayer] }'
+  )
+    .stockpile-padding
+    .stockpile-center
+      .stockpile-spacing.end(
+        ng-if='player.stockpile.length > 0',
+        ng-style='{ "width" : 16.666667 / (player.stockpile.length * 2) + "%" }'
       )
-    img.jack(
-      ng-src='/games/glory-to-rome/images/cards/Jack.png',
-      ng-alt='Jack',
-      ng-click='yourTurn() && jackClicked(you().actions[0].kind, game)',
-    )
-    .jack-counter
-      | {{ game.pool.black }}
-    img.deck(
-      ng-src='/games/glory-to-rome/images/cards/deck.png',
-      ng-alt='Deck',
-      ng-click='yourTurn() && deckClicked(you().actions[0].kind, game)'
-    )
-    .deck-counter
-      | {{ game.deck.length }}
-    button.draw-one(
-      ng-click='yourTurn() && drawOne(you().actions[0].kind, game)'
-    )
-      | DRAW 1
-    .pool
-      button.pool-counter(
-        ng-drag='game.pool[color] > 0 && yourTurn() && actions.hasAbilityToUse("Archway", you())',
-        ng-drag-data='{color:color}',
-        ng-repeat='color in poolColors',
-        ng-click='yourTurn() && poolClicked(you(), color, game, you().actions[0].kind)',
-        style='{{game.sites[color] == 0 ? ("border-style:solid;border-color:#" + colors[color] + ";") : ""}}background-color:#{{ colors[color] }};color: white;background:repeating-linear-gradient(45deg,#{{colors[color]}},#{{colors[color]}} {{game.sites[color] > 0 ? "7" : "0"}}px,#{{(6 - game.sites[color] < game.players.length) ? colors[color] : "222"}} {{game.sites[color] > 0 ? "7" : "0"}}px,#{{(6 - game.sites[color] < game.players.length) ? colors[color] : "222"}} 14px)'
+      .stockpile-material(
+        ng-if='player.stockpile.length > 0',
+        ng-repeat-start='material in player.stockpile track by $index',
+        ng-drag='$parent.$parent.$index == meta.you',
+        ng-drag-data='{index: $index, material: material}', 
+        ng-click='yourTurn() && $parent.$parent.$index == meta.you && stockpileClicked(you().actions[0].kind, {index: $index, material: material}, game)', 
+        ng-style='{ "background-color" : "#" + colors[material], "width" : 83.333333 / player.stockpile.length + "%" }'
       )
-        | {{ game.pool[color] > 0 ? game.pool[color] : "" }}
-    button.skip(
-      ng-if='yourTurn() && canSkipCurrentAction(you(), game)',
-      ng-click='yourTurn() && skipAction(you(), game, you().actions[0].kind)'
-    )
-      | {{ you().actions[0] && you().actions[0].kind == 'Rome Demands' ? "GLORY TO ROME" : "SKIP ACTION" }}
-    button.skip.nudge(
-      ng-if='(!yourTurn()) || game.finished',
-      ng-click='(!yourTurn() || game.finished) && triggerReconnect()'
-    )
-      | NUDGE
+      .stockpile-spacing.end(
+        ng-repeat-end='',
+        ng-class='{ "end" : $index == player.stockpile.length - 1 }',
+        ng-style='{ "width" : 16.666667 / (player.stockpile.length * ($index == player.stockpile.length - 1 ? 2 : 1)) + "%" }'
+      )
 
-    
+
+
+
+
+block bottom
+  #hand(
+    ng-hover-hand=''
+  )
+    img.hand(
+      ng-hover-card
+      ng-drag='true', 
+      ng-drag-data='{index: $index, card: c}', 
+      ng-click='yourTurn() && handClicked(you(), game, {index: $index, card: c}, you().actions[0].kind)', 
+      ng-repeat='c in you().hand track by $index', 
+      style='left: {{ $index * spacing(you().hand.length) }}px;bottom:{{ 4 + (c.selected ? 4 : 0) }}%;{{ isDragging ? "height:92%;" : ""}};{{ c.selected ? "-webkit-filter:brightness(90%);" : "" }}',
+      ng-src='games/glory-to-rome/images/cards/{{ c.name }}.png', 
+      ng-alt='{{ c.name }}'
+    )
+  img.jack(
+    ng-src='/games/glory-to-rome/images/cards/Jack.png',
+    ng-alt='Jack',
+    ng-click='yourTurn() && jackClicked(you().actions[0].kind, game)',
+  )
+  .jack-counter
+    | {{ game.pool.black }}
+  img.deck(
+    ng-src='/games/glory-to-rome/images/cards/deck.png',
+    ng-alt='Deck',
+    ng-click='yourTurn() && deckClicked(you().actions[0].kind, game)'
+  )
+  .deck-counter
+    | {{ game.deck.length }}
+  button.draw-one(
+    ng-click='yourTurn() && drawOne(you().actions[0].kind, game)'
+  )
+    | DRAW 1
+  .pool
+    button.pool-counter(
+      ng-drag='game.pool[color] > 0 && yourTurn() && actions.hasAbilityToUse("Archway", you())',
+      ng-drag-data='{color:color}',
+      ng-repeat='color in poolColors',
+      ng-click='yourTurn() && poolClicked(you(), color, game, you().actions[0].kind)',
+      style='{{game.sites[color] == 0 ? ("border-style:solid;border-color:#" + colors[color] + ";") : ""}}background-color:#{{ colors[color] }};color: white;background:repeating-linear-gradient(45deg,#{{colors[color]}},#{{colors[color]}} {{game.sites[color] > 0 ? "7" : "0"}}px,#{{(6 - game.sites[color] < game.players.length) ? colors[color] : "222"}} {{game.sites[color] > 0 ? "7" : "0"}}px,#{{(6 - game.sites[color] < game.players.length) ? colors[color] : "222"}} 14px)'
+    )
+      | {{ game.pool[color] > 0 ? game.pool[color] : "" }}
+  button.skip(
+    ng-if='yourTurn() && canSkipCurrentAction(you(), game)',
+    ng-click='yourTurn() && skipAction(you(), game, you().actions[0].kind)'
+  )
+    | {{ you().actions[0] && you().actions[0].kind == 'Rome Demands' ? "GLORY TO ROME" : "SKIP ACTION" }}
+  button.skip.nudge(
+    ng-if='(!yourTurn()) || game.finished',
+    ng-click='(!yourTurn() || game.finished) && triggerReconnect()'
+  )
+    | NUDGE
+
+  

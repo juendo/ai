@@ -1,6 +1,6 @@
 var state = {
       gameName: 'glory-to-rome',
-      iterations: 200,
+      iterations: 300,
       players: [
         {
           name: "",

@@ -82,7 +82,11 @@ app.get('/:game', function(req, res) {
         inactive: {
           'glory-to-rome': '#333',
           'no-thanks': '#550'
-        }[req.params.game]
+        }[req.params.game],
+        component: {
+          class: 'person',
+          repeat: 'card in player.cards'
+        }
       },
       function(err, html) {
         res.render('views/index', {

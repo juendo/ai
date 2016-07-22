@@ -89,11 +89,6 @@ class AIMatch {
     
     var rules = require('../public/games/' + state.gameName + '/rules');
     this.actions = rules.actions;
-    this.actions.applyMove = function(m, g) {
-        var newState = this[m.kind](m, g, g.players[g.currentPlayer]);
-        if (newState) this.checkIfGameOver(newState);
-        return newState;
-    }
   }
   run() {
     this.actions.start(this.state);
@@ -102,13 +97,21 @@ class AIMatch {
       console.log(translateMove(move, this.state));
       this.actions.applyMove(move, this.state);
     }
+    console.log('winner:');
+    console.log(this.actions.winner(this.state));
   }
 }
 
-var ai = require('./game');
+var ai = require('./mcts');
 var rules = require('../public/games/glory-to-rome/rules');
-var p1 = new AIPlayer('MCTS 1', ai.getMove);
-var p2 = new AIPlayer('MCTS 2', ai.getMove);
+var p1 = new AIPlayer('MCTS 1', function(state) {
+  var game = require('./game');
+  return ai.getMove(game(state), 100);
+});
+var p2 = new AIPlayer('MCTS 2', function(state) {
+  var game = require('./game');
+  return ai.getMove(game(state), 200);
+});
 
 var match = new AIMatch([p1, p2], rules.state);
 match.run();

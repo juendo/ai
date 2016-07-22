@@ -62,4 +62,16 @@ mixin public
     if block
       block
 
-block game
+mixin component(component)
+  .green(class='#{component.class}')
+  div(
+    class='#{component.class}',
+    ng-click='control["#{component.class}"].click(game)'
+  )
+
++heading
+  block heading
++player-box
+  block player
++bottom
+  block bottom
