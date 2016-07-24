@@ -40,13 +40,13 @@ block player
         ng-style='{ "background-color" : "#" + colors[card.color] }'
       )
   .player-building-area(
-    ng-if='!game.finished',
+    ng-if='true',
     ng-repeat='building in player.buildings track by $index',
     ng-style='{ "max-width" : (game.players.length == 2 ? 23.75 : 31.666667) + "%", "width" : buildingWidth(player.buildings.length + (player.publicBuildings ? player.publicBuildings.length : 0)) + "%" }'
   )
     img.building(
       ng-drop='true', 
-      ng-drop-success='(yourTurn() && ($parent.$parent.$index == meta.you || actions.actions.hasAbilityToUse("Stairway", you()))) ? dragEnded(you().actions[0].kind, $data, game, $index, $parent.$parent.$index) : null',
+      ng-drop-success='(yourTurn() && ($parent.$parent.$index === meta.you || actions.actions.hasAbilityToUse("Stairway", you()))) ? dragEnded(you().actions[0].kind, $data, game, $index, $parent.$parent.$index) : null',
       ng-src='games/glory-to-rome/images/cards/{{ building.name }}.png',
       ng-alt='{{ building.name }}',
       ng-click='yourTurn() && buildingClicked(you().actions[0].kind, building, $parent.$parent.$index == meta.you, player, $index, game)',
@@ -65,7 +65,7 @@ block player
           ng-style='{ "width" : 100 / colorValues[building.siteColor] + "%", "background-color" : "#" + colors[material] }'
         )
   .player-building-area(
-    ng-if='!!player.publicBuildings && !game.finished && !actions.hasAbilityToUseWithoutPublicBuildings(building, player)',
+    ng-if='!!player.publicBuildings && !actions.hasAbilityToUseWithoutPublicBuildings(building, player)',
     ng-repeat='building in player.publicBuildings track by $index',
     ng-style='{ "max-width" : (game.players.length == 2 ? 23.75 : 31.666667) + "%", "width" : buildingWidth(player.buildings.length + (player.publicBuildings ? player.publicBuildings.length : 0)) + "%" }'
   )
@@ -77,13 +77,12 @@ block player
       ng-class='{ "is-relevant" : $parent.$parent.$index == game.currentPlayer && actions.hasAbilityToUse(building, player) && player.actions[0] && relevantAction(building, player.actions[0]) }'
     )
   .score-box(
-    ng-if='game.finished'
+    ng-if='game.finished',
+    ng-style='{"opacity": game.finished ? 1 : 0, "background-color": actions.winner(game) === $index ? "rgba(44, 167, 61, 0.5)" : "rgba(229, 2, 12, 0.5)"}'
   )
     .score
-      | {{ player.winner ? "GLORY TO " + player.name.toUpperCase() : actions.score(player) + " POINTS"}}
-    .vault(
-      ng-class='{ "is-current" : player == game.players[game.currentPlayer] }'
-    )
+      | {{ player.winner ? "" : actions.score(player)}}
+    .vault
       .stockpile-padding
       .stockpile-center
         .stockpile-spacing.end(
@@ -101,7 +100,7 @@ block player
           ng-style='{ "width" : 16.666667 / (player.vault.length * ($index == player.vault.length - 1 ? 2 : 1)) + "%" }'
         )
   .stockpile(
-    ng-class='{ "is-current" : player == game.players[game.currentPlayer] }'
+    ng-class='{ "is-current" : player == game.players[game.currentPlayer] && !game.finished }'
   )
     .stockpile-padding
     .stockpile-center

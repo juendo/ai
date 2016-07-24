@@ -1,5 +1,7 @@
 'use strict'
 
+var Combinatorics = require('js-combinatorics');
+
 // AI that plays each action according to basic rules of thumb
 // want to get all possible legal moves for a player
 class LegalMoves {
@@ -54,7 +56,9 @@ class LegalMoves {
     
     var moves = [];
     var jackConsidered = false;
+    var colourCounts = {'yellow': [], 'green': [], 'red': [], 'grey': [], 'blue': [], 'purple': [], 'black': []};
     for (var i = 0; i < this.player.hand.length; i++) {
+      colourCounts[this.player.hand[i].color].push(i);
       if (this.player.hand[i].color === 'black' && !jackConsidered) {
         jackConsidered = true;
         this.colors.forEach(function(color) {
@@ -64,6 +68,25 @@ class LegalMoves {
         moves.push({kind: 'lead', cards: [i], role: this.player.hand[i].color});
       }
     }
+
+    // add the 3/2 as a jacks
+    var jackNum = this.actions.hasAbilityToUse('Circus', this.player) ? 2 : 3;
+    this.colors.forEach(function(color) {
+      if (colourCounts[color].length >= jackNum) {
+        var cmb = Combinatorics.combination(colourCounts[color], jackNum);
+        var cards = cmb.next();
+        this.colors.forEach(function(role) {
+          moves.push({kind: 'lead', cards: cards, role: role});
+        }, this);
+      }
+    }, this);
+
+    if (this.actions.hasAbilityToUse('Palace', this.player)) {
+      this.colors.forEach(function(role) {
+        if (colourCounts[role].length + colourCounts['black'].length) moves.push({kind: 'lead', cards: colourCounts[role].concat(colourCounts['black']), role: role});
+      }, this);
+    }
+
     moves.push({kind: 'refill'});
     if (this.game.pool['black'] > 0) {
       moves.push({kind: 'takeJack'});
@@ -75,9 +98,26 @@ class LegalMoves {
 
     // three as a jack
     var moves = [];
+    var colourCounts = {'yellow': [], 'green': [], 'red': [], 'grey': [], 'blue': [], 'purple': [], 'black': []};
     for (var i = 0; i < this.player.hand.length; i++) {
+      colourCounts[this.player.hand[i].color].push(i);
       if (this.player.actions[0].color === this.player.hand[i].color || this.player.hand[i].color === 'black') moves.push({kind: 'follow', cards: [i]});
     }
+    // add the 3/2 as a jacks
+    var jackNum = this.actions.hasAbilityToUse('Circus', this.player) ? 2 : 3;
+    this.colors.forEach(function(color) {
+      if (colourCounts[color].length >= jackNum) {
+        var cmb = Combinatorics.combination(colourCounts[color], jackNum);
+        moves.push({kind: 'follow', cards: cmb.next()});
+      }
+    }, this);
+
+    if (this.actions.hasAbilityToUse('Palace', this.player)) {
+      this.colors.forEach(function(role) {
+        if (colourCounts[role].length + colourCounts['black'].length) moves.push({kind: 'lead', cards: colourCounts[role].concat(colourCounts['black']), role: role});
+      }, this);
+    }
+
     moves.push({kind: 'refill'});
     if (this.game.pool['black'] > 0) {
       moves.push({kind: 'takeJack'});
@@ -169,12 +209,22 @@ class LegalMoves {
       // check if can lay foundation
       for (var i = 0; i < this.player.hand.length; i++) {
         if (this.player.hand[i].color !== 'black') {
-          if (this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length || (this.game.sites[this.player.hand[i].color] > 0 && ((this.player.actions[1] && this.player.actions[1].kind === this.player.actions[0].kind) || this.actions.hasAbilityToUse('Tower', this.player)))) {
+          if (this.player.hand[i].name !== 'Statue' && this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length || (this.game.sites[this.player.hand[i].color] > 0 && ((this.player.actions[1] && this.player.actions[1].kind === this.player.actions[0].kind) || this.actions.hasAbilityToUse('Tower', this.player)))) {
             var alreadyHas = false;
             this.player.buildings.forEach(function(b) {
               if (b.name === this.player.hand[i].name) alreadyHas = true;
             }, this);
             if (!alreadyHas) moves.push({kind: 'lay', index: i, color: this.player.hand[i].color});
+          } else if (this.player.hand[i].name === 'Statue') {
+            this.colors.forEach(function(color) {
+              if (this.game.sites[color] > 6 - this.game.players.length || (this.game.sites[color] > 0 && ((this.player.actions[1] && this.player.actions[1].kind === this.player.actions[0].kind) || this.actions.hasAbilityToUse('Tower', this.player)))) {
+                var alreadyHas = false;
+                this.player.buildings.forEach(function(b) {
+                  if (b.name === 'Statue') alreadyHas = true;
+                }, this);
+                if (!alreadyHas) moves.push({kind: 'lay', index: i, color: color});
+              }
+            }, this);
           }
         }
       }
@@ -232,12 +282,23 @@ class LegalMoves {
       // check if can lay foundation
       for (var i = 0; i < this.player.hand.length; i++) {
         if (this.player.hand[i].color !== 'black') {
-          if (this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length || (this.game.sites[this.player.hand[i].color] > 0 && ((this.player.actions[1] && this.player.actions[1].kind === this.player.actions[0].kind) || this.actions.hasAbilityToUse('Tower', this.player)))) {
+          if (this.player.hand[i].name !== 'Statue' && this.game.sites[this.player.hand[i].color] > 6 - this.game.players.length || (this.game.sites[this.player.hand[i].color] > 0 && ((this.player.actions[1] && this.player.actions[1].kind === this.player.actions[0].kind) || this.actions.hasAbilityToUse('Tower', this.player)))) {
             var alreadyHas = false;
             this.player.buildings.forEach(function(b) {
               if (b.name === this.player.hand[i].name) alreadyHas = true;
             }, this);
             if (!alreadyHas) moves.push({kind: 'lay', index: i, color: this.player.hand[i].color});
+          }
+          else if (this.player.hand[i].name === 'Statue') {
+            this.colors.forEach(function(color) {
+              if (this.game.sites[color] > 6 - this.game.players.length || (this.game.sites[color] > 0 && ((this.player.actions[1] && this.player.actions[1].kind === this.player.actions[0].kind) || this.actions.hasAbilityToUse('Tower', this.player)))) {
+                var alreadyHas = false;
+                this.player.buildings.forEach(function(b) {
+                  if (b.name === 'Statue') alreadyHas = true;
+                }, this);
+                if (!alreadyHas) moves.push({kind: 'lay', index: i, color: color});
+              }
+            }, this);
           }
         }
       }

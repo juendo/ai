@@ -10,8 +10,8 @@ mixin heading
 mixin player-box
   .player-box(
     ng-repeat='player in game.players',
-    ng-class='{ "is-you" : player == you(), "is-current" : player == game.players[game.currentPlayer] }',
-    ng-style='{"width": 100 / game.players.length + "%", "background-color" : player == game.players[game.currentPlayer] ? "#{active}" : "#{inactive}" }'
+    ng-class='{ "is-you" : player === you(), "is-current" : (player === game.players[game.currentPlayer]) && !game.finished }',
+    ng-style='{"width": 100 / game.players.length + "%", "background-color" : (player === game.players[game.currentPlayer] && !game.finished) ? "#{active}" : "#{inactive}" }'
   )
     if block
       block

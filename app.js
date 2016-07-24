@@ -3,6 +3,7 @@
  * Module dependencies
  */
 var express = require('express');
+//var stormpath = require('express-stormpath');
 var logger = require('morgan');
 var methodOverride = require('method-override');
 var session = require('express-session');
@@ -43,7 +44,27 @@ app.use(multer());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-
+/*app.use(stormpath.init(app, {
+  website: true,
+  web: {
+    login: {
+      enabled: true
+    },
+    logout: {
+      enabled: true
+    },
+    me: {
+      enabled: false
+    },
+    oauth2: {
+      enabled: false
+    },
+    register: {
+      enabled: true
+    }
+  }
+}));
+*/
 
 /**
  * Routes
@@ -67,7 +88,7 @@ app.get('/', function(req, res) {
 });
 
 // serve index and view partials
-app.get('/:game', function(req, res) {
+app.get('/:game', /*stormpath.loginRequired, */function(req, res) {
 
     // render template and store the result in html variable
     res.render('public/games/' + req.params.game + '/view', {
@@ -121,3 +142,10 @@ io.sockets.on('connection', socketServer);
 server.listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
 });
+/*
+app.on('stormpath.ready', function() {
+  server.listen(app.get('port'), function () {
+    console.log('Express server listening on port ' + app.get('port'));
+  });
+});*/
+

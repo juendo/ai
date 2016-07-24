@@ -36,7 +36,7 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
   // message received indicating that another player has acted
   socket.on('change', function (data) {
     if (data.game.turn < $rootScope.game.turn) return update();
-    if (data.game.turn == $rootScope.game.turn && data.game.turn > 1 && !data.move) {
+    if (data.game.turn === $rootScope.game.turn && data.game.turn > 1 && !data.move) {
       return;
     };
     $rootScope.game.started = true;
