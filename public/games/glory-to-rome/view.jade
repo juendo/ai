@@ -45,7 +45,7 @@ block player
     ng-style='{ "max-width" : (game.players.length == 2 ? 23.75 : 31.666667) + "%", "width" : buildingWidth(player.buildings.length + (player.publicBuildings ? player.publicBuildings.length : 0)) + "%" }'
   )
     img.building(
-      ng-drop='true', 
+      ng-drop='true',
       ng-drop-success='(yourTurn() && ($parent.$parent.$index === meta.you || actions.hasAbilityToUse("Stairway", you()))) ? dragEnded(you().actions[0].kind, $data, game, $index, $parent.$parent.$index) : null',
       ng-src='games/glory-to-rome/images/cards/{{ building.name }}.png',
       ng-alt='{{ building.name }}',

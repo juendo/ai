@@ -5,7 +5,7 @@ angular.module('Game').factory('actions', function ($rootScope) {
 
   actions.applyMove = function(move, game) {
     
-    move.player = game.currentPlayer;
+    move.maker = game.currentPlayer;
 
   	var newState = actions[move.kind](move, game, game.players[game.currentPlayer]);
 

@@ -80,11 +80,11 @@ angular.module('Game').controller('GameController', function($scope, socket, act
   // called when a drag ends over a structure
   $scope.dragEnded = function(action, data, game, index, playerIndex) {
 
-    if (data.card && action == 'Craftsman')
+    if (data.card && action === 'Craftsman')
       var move = {kind: 'fillFromHand', building: index, data: data};
-    else if (data.material && action == 'Architect')
+    else if (data.material && action === 'Architect')
       var move = {kind: 'fillFromStockpile', building: index, data: data, player: playerIndex};
-    else if (data.color && action == 'Architect')
+    else if (data.color && action === 'Architect')
       var move = {kind: 'fillFromPool', building: index, color: data.color, player: playerIndex};
 
     if ((typeof move !== 'undefined') && actions.applyMove(move, game)) socket.update();

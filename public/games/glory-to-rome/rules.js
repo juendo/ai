@@ -155,6 +155,9 @@ var actions = {
       game.players[i].hand.push({name: 'Jack', color: 'black'});
       game.pool['black']--;
     }
+    game.players[0].buildings.push({name:'Stairway', color: 'purple', done: true, materials: [], siteColor: 'purple'});
+    game.players[1].buildings.push({name: 'Latrine', color: 'yellow', done: true, materials: [], siteColor: 'yellow'});
+    game.players[0].stockpile.push('yellow');
     game.leader = Math.floor(Math.random() * (game.players.length));
     game.currentPlayer = game.leader;
     game.players[game.currentPlayer].actions.push({kind:'Lead', description:'LEAD or THINK'});
@@ -290,16 +293,18 @@ var actions = {
     }
   },
 
-  canAddToStructure: function(structure, player, color, game, action) {
+  canAddToStructure: function(structure, player, color, game, action, owner) {
+
+    //console.log('can add');
+    //console.log(owner);
     
     var stairway = this.hasAbilityToUse('Stairway', player);
+    //console.log(stairway);
     // check if structure belongs to the player
-    var belongsToPlayer = false;
-    player.buildings.forEach(function(building) {
-      if (building == structure) {
-        belongsToPlayer = true;
-      }
-    });
+    var belongsToPlayer = (typeof owner !== 'undefined') ? (game.players[owner] === player) : true;
+
+    //console.log(belongsToPlayer);
+
     if (!belongsToPlayer && (!stairway || !structure.done || (action && action.usedStairway))) return false;
     if (belongsToPlayer && (action && action.usedRegularArchitect)) return false;
 
@@ -307,10 +312,10 @@ var actions = {
     var road = this.hasAbilityToUse('Road', player);
     var tower = this.hasAbilityToUse('Tower', player);
 
-    var canAdd = (structure.siteColor == color 
-                || scriptorium && color == 'purple'
-                || road && structure.siteColor == 'blue'
-                || tower && color == 'yellow');
+    var canAdd = (structure.siteColor === color 
+                || scriptorium && color === 'purple'
+                || road && structure.siteColor === 'blue'
+                || tower && color === 'yellow');
 
     if (stairway && !belongsToPlayer) {
 
@@ -338,6 +343,7 @@ var actions = {
       if (ok) {
         action.usedStairway = true;
       }
+      //console.log(ok);
       return ok;
     } else {
 
@@ -984,7 +990,7 @@ var actions = {
     var data = move.data;
     var action = player.actions[0];
 
-    if (this.canAddToStructure(structure, player, data.material, game, action)) {
+    if (this.canAddToStructure(structure, player, data.material, game, action, move.player)) {
       structure.materials.push(data.material);
       player.stockpile.splice(data.index, 1);
 
@@ -1004,7 +1010,7 @@ var actions = {
     var color = move.color;
     var action = player.actions[0];
 
-    if (this.canAddToStructure(structure, player, color, game, action)) {
+    if (this.canAddToStructure(structure, player, color, game, action, move.player)) {
       structure.materials.push(color);
       game.pool[color]--;
 
