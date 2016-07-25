@@ -155,9 +155,6 @@ var actions = {
       game.players[i].hand.push({name: 'Jack', color: 'black'});
       game.pool['black']--;
     }
-    game.players[0].buildings.push({name:'Stairway', color: 'purple', done: true, materials: [], siteColor: 'purple'});
-    game.players[1].buildings.push({name: 'Latrine', color: 'yellow', done: true, materials: [], siteColor: 'yellow'});
-    game.players[0].stockpile.push('yellow');
     game.leader = Math.floor(Math.random() * (game.players.length));
     game.currentPlayer = game.leader;
     game.players[game.currentPlayer].actions.push({kind:'Lead', description:'LEAD or THINK'});

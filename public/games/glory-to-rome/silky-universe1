@@ -8,15 +8,11 @@ integrate winning moves into ai
 integrate opponent policies into ai
 run ai tests
 
-30 days ~ 240 hours total
+29 days ~ 232 hours total
 
 write - 34 pages ~100 hours
 
 tidy css ~ 4 hours
-
-create new database ~ 16 hours
-- account for different games
-- allow general interface for any game
 
 program ismcts ~ 24 hours
 
@@ -30,8 +26,10 @@ implement another game ~ 24 hours
 
 tidy up code ~ 24 hours
 
-account for multiple winners ~ 1 hour
-
 tests ~ 12 hours
 
-multiple winner
+account for multiple winners ~ 1 hour
+latrine in moves ~ 1 hour
+create new database ~ 16 hours
+- account for different games
+- allow general interface for any game
