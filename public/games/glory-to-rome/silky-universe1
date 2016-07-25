@@ -35,6 +35,4 @@ account for multiple winners ~ 1 hour
 tests ~ 12 hours
 
 fix ai multiplayer ~ 10 hours
-- games with one AI work
-- games where AI makes multiple moves in succession update each move correctly
 - games with multiple humans and multiple AIs work properly

@@ -1,5 +1,7 @@
 'use strict'
 
+var async = require('async');
+
 // export function for listening to the socket
 module.exports = function (io) {
 
@@ -14,20 +16,19 @@ module.exports = function (io) {
 
       if (data.ai) {
         var state = data.ai;
+        data.game = undefined;
+        var createGame = require('../ai/game');
+        var ai = require('../ai/mcts');
+        var actions = require('../public/games/' + state.gameName + '/rules').actions;
 
-        while (state.players[state.currentPlayer].ai && !state.finished) {
-          var createGame = require('../ai/game');
-          var game = createGame(state);
-          var ai = require('../ai/mcts');
-          data.move = ai.getMove(game, state.iterations);
-          var actions = require('../public/games/' + state.gameName + '/rules').actions;
-          actions.applyMove(data.move, state);
-          socket.emit('change', data);
-          socket.broadcast.to(data.room).emit('change', data);
-          if (gamesList.gamePlayers[data.room]) {
-            delete gamesList.gamePlayers[data.room];
-          }
-        }
+        var game = createGame(state);
+        data.move = ai.getMove(game, state.iterations);
+        actions.applyMove(data.move, state);
+        data.turn = state.turn;
+        data.update = true;
+        socket.emit('change', data);
+        data.update = false;
+        socket.broadcast.to(data.room).emit('change', data);
       }
     });
 

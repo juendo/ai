@@ -44,10 +44,13 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
   // message received indicating that another player has acted
   socket.on('change', function (data) {
 
+    console.log(data);
+
     if (data.turn < $rootScope.game.turn) return update($rootScope.game);
 
     else if (data.turn > $rootScope.game.turn && !data.game) {
       actions.applyMove(data.move, $rootScope.game);
+      if (data.update && $rootScope.game.players[$rootScope.game.currentPlayer].ai && !$rootScope.game.finished) update();
     } 
 
     else if ((data.turn === 0 || data.turn > $rootScope.game.turn) && data.game) {
