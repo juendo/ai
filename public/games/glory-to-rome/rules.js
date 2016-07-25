@@ -36,6 +36,8 @@ var state = {
           'blue': 6
       },
       leader: 0,
+      moves: [],
+      turn: 0,
       currentPlayer: 0,
       glory: -1
     };

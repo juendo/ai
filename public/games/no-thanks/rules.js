@@ -15,6 +15,8 @@ var state = {
     chips: 0
   },
   currentPlayer: 0,
+  moves: [],
+  turn: 0
 };
 
 var actions = {
