@@ -99,7 +99,9 @@ var actions = {
   start: function(game) {
 
     if (game.players.length < 2) return false;
+    game.turn = 0;
     game.started = true;
+    game.moves = [];
     game.deck = this.createDeck();
     for (var i = 0; i < game.players.length; i++) {
       game.pool[game.deck.pop().color]++;
@@ -1185,7 +1187,11 @@ if (typeof module !== 'undefined') {
   actions.applyMove = function(move, game) {
     var newState = actions[move.kind](move, game, game.players[game.currentPlayer]);
 
-    if (newState) actions.checkIfGameOver(newState);
+    if (newState) {
+      actions.checkIfGameOver(newState);
+      game.turn++;
+      game.moves.push(move);
+    }
     
     return newState;
   }

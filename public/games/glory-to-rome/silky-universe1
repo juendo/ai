@@ -1,0 +1,37 @@
+silky-universe1
+
+tidy up css - separate out global and specific
+add username to stormfront
+create new database and link to users
+program the ismcts algorithm
+integrate winning moves into ai
+integrate opponent policies into ai
+run ai tests
+
+30 days ~ 240 hours total
+
+write - 34 pages ~100 hours
+
+tidy css ~ 4 hours
+
+create new database ~ 16 hours
+- account for different games
+- allow general interface for any game
+
+program ismcts ~ 24 hours
+
+integrate winning moves into ai ~ 10 hours
+
+integrate opponent policies into ai ~ 10 hours
+
+run ai tests ~ 20 hours
+
+implement another game ~ 24 hours
+
+tidy up code ~ 24 hours
+
+account for multiple winners ~ 1 hour
+
+tests ~ 12 hours
+
+fix ai multiplayer ~ 10 hours

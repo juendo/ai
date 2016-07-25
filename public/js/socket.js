@@ -24,24 +24,38 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
     }
   };
 
+  var ding = new Audio('../audio/bell.m4a');
+  $rootScope.ding = ding;
 
-  var update = function() {
-   
-    socket.emit('update', {
-      game: JSON.parse(angular.toJson($rootScope.game)),
-      ai: $rootScope.game.players[$rootScope.game.currentPlayer].ai
-    });
+  var update = function(game) {
+
+    var data = {
+      turn: $rootScope.game.turn,
+      move: $rootScope.game.moves[$rootScope.game.moves.length - 1],
+      room: $rootScope.game.room,
+    };
+
+    if ($rootScope.game.players[$rootScope.game.currentPlayer].ai) data.ai = JSON.parse(angular.toJson($rootScope.game));
+    if (game) data.game = game;
+
+    socket.emit('update', data);
   }
 
   // message received indicating that another player has acted
   socket.on('change', function (data) {
-    if (data.game.turn < $rootScope.game.turn) return update();
-    if (data.game.turn === $rootScope.game.turn && data.game.turn > 1 && !data.move) {
-      return;
-    };
-    $rootScope.game.started = true;
-    $rootScope.game = data.game;
 
+    if (data.turn < $rootScope.game.turn) return update($rootScope.game);
+
+    else if (data.turn > $rootScope.game.turn) {
+      actions.applyMove(data.move, $rootScope.game);
+    } 
+
+    else if (data.game) {
+      $rootScope.game.started = true;
+      $rootScope.game = data.game;
+    }
+    
+    if ($rootScope.game.currentPlayer === $rootScope.meta.you) ding.play();
   });
 
   // when the game is first created
@@ -75,11 +89,8 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
     $rootScope.game.players.push(player);
   });
 
-  // if reconnecting, request missed data from server
   socket.on('reconnect', function() {
-    socket.emit('reconnection', {
-      game: $rootScope.game
-    });
+    update();
   });
 
   return {

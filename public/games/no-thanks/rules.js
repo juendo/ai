@@ -58,7 +58,8 @@ var actions = {
     };
 
     game.started = true;
-
+    game.turn = 0;
+    game.moves = [];
     return game;
   },
 
@@ -118,7 +119,11 @@ if (typeof module !== 'undefined') {
   actions.applyMove = function(move, game) {
     var newState = actions[move.kind](move, game, game.players[game.currentPlayer]);
 
-    if (newState) actions.checkIfGameOver(newState);
+    if (newState) {
+      actions.checkIfGameOver(newState);
+      game.turn++;
+      game.moves.push(move);
+    }
     
     return newState;
   }

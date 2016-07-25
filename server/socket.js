@@ -5,9 +5,15 @@ module.exports = function (io) {
 
   return function(socket) {
     socket.on('update', function (data) {
-      socket.join(data.game.room);
-      if (data.ai && !data.game.finished) {
-        socket.broadcast.to(data.room).emit('change', data);
+
+      socket.join(data.room);
+      socket.broadcast.to(data.room).emit('change', data);
+      if (gamesList.gamePlayers[data.room]) {
+        delete gamesList.gamePlayers[data.room];
+      }
+
+      if (data.ai) {
+        var state = data.ai;
           //var basic = require('../ai/basic');
           //data.move = basic(data, data.game.currentPlayer)[0];
         /*var ai = require('../ai/game.js');
@@ -15,27 +21,22 @@ module.exports = function (io) {
           data.move = move;
           socket.emit('change', data);
           socket.broadcast.to(data.room).emit('change', data);
-          if (gamesList.gamePlayers[data.game.room]) {
-            delete gamesList.gamePlayers[data.game.room];
+          if (gamesList.gamePlayers[data.room]) {
+            delete gamesList.gamePlayers[data.room];
           }
         });*/
-        while (data.game.players[data.game.currentPlayer].ai && !data.game.finished) {
+        while (state.players[state.currentPlayer].ai && !state.finished) {
           var createGame = require('../ai/game');
-          var game = createGame(data.game);
+          var game = createGame(state);
           var ai = require('../ai/mcts');
-          data.move = ai.getMove(game, data.game.iterations);
-          var actions = require('../public/games/' + data.game.gameName + '/rules').actions;
-          actions.applyMove(data.move, data.game);
+          data.move = ai.getMove(game, state.iterations);
+          var actions = require('../public/games/' + state.gameName + '/rules').actions;
+          actions.applyMove(data.move, state);
           socket.emit('change', data);
           socket.broadcast.to(data.room).emit('change', data);
-          if (gamesList.gamePlayers[data.game.room]) {
-            delete gamesList.gamePlayers[data.game.room];
+          if (gamesList.gamePlayers[data.room]) {
+            delete gamesList.gamePlayers[data.room];
           }
-        }
-      } else {
-        socket.broadcast.to(data.game.room).emit('change', data);
-        if (gamesList.gamePlayers[data.game.room]) {
-          delete gamesList.gamePlayers[data.game.room];
         }
       }
     });
@@ -80,12 +81,6 @@ module.exports = function (io) {
         socket.emit('accepted', gamesList.gamePlayers[data.room]);
         socket.broadcast.to(data.room).emit('joined', data.name);
       }
-    });
-
-    // get the most recent game state
-    socket.on('reconnection', function(data) {
-      socket.join(data.room);
-      socket.broadcast.to(data.room).emit('change', data);
     });
   };
 };

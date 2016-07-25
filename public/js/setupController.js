@@ -18,7 +18,8 @@ angular.module('Game').controller('setupController', function($scope, socket, ac
   
   // when start game is pressed
   $scope.start = function(game) {
-    if (actions.start(game)) socket.update();
+    if (actions.start(game)) socket.update(game);
+    if ($rootScope.game.currentPlayer === $rootScope.meta.you) $rootScope.ding.play();
   }
 
   $scope.addAI = function(game) {
