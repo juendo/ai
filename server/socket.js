@@ -14,17 +14,7 @@ module.exports = function (io) {
 
       if (data.ai) {
         var state = data.ai;
-          //var basic = require('../ai/basic');
-          //data.move = basic(data, data.game.currentPlayer)[0];
-        /*var ai = require('../ai/game.js');
-        ai.getMove(data.game, function(move) {
-          data.move = move;
-          socket.emit('change', data);
-          socket.broadcast.to(data.room).emit('change', data);
-          if (gamesList.gamePlayers[data.room]) {
-            delete gamesList.gamePlayers[data.room];
-          }
-        });*/
+
         while (state.players[state.currentPlayer].ai && !state.finished) {
           var createGame = require('../ai/game');
           var game = createGame(state);

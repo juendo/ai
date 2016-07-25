@@ -142,13 +142,9 @@ angular.module('Game').controller('GameController', function($scope, socket, act
   }
 
   $scope.triggerReconnect = function() {
-    socket.emit('reconnection', {game: $scope.game});
+    socket.update($scope.game);
   };
-
-  $scope.triggerReconnect = function() {
-    socket.emit('reconnection', {game: $scope.game});
-  };
-
+  
   $scope.you = function() {
     return $scope.game.players[$scope.meta.you];
   };

@@ -46,7 +46,7 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
 
     if (data.turn < $rootScope.game.turn) return update($rootScope.game);
 
-    else if (data.turn > $rootScope.game.turn) {
+    else if (data.turn > $rootScope.game.turn && !data.game) {
       actions.applyMove(data.move, $rootScope.game);
     } 
 
@@ -90,7 +90,7 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
   });
 
   socket.on('reconnect', function() {
-    update();
+    update($rootScope.game);
   });
 
   return {
