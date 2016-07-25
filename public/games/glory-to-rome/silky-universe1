@@ -34,5 +34,5 @@ account for multiple winners ~ 1 hour
 
 tests ~ 12 hours
 
-fix ai multiplayer ~ 10 hours
-- games with multiple humans and multiple AIs work properly
+make each game define its own player counts
+4bbsv6

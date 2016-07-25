@@ -58,6 +58,7 @@ class LegalMoves {
     var jackConsidered = false;
     var colourCounts = {'yellow': [], 'green': [], 'red': [], 'grey': [], 'blue': [], 'purple': [], 'black': []};
     for (var i = 0; i < this.player.hand.length; i++) {
+      //console.log(this.player.hand[i]);
       colourCounts[this.player.hand[i].color].push(i);
       if (this.player.hand[i].color === 'black' && !jackConsidered) {
         jackConsidered = true;
@@ -100,6 +101,7 @@ class LegalMoves {
     var moves = [];
     var colourCounts = {'yellow': [], 'green': [], 'red': [], 'grey': [], 'blue': [], 'purple': [], 'black': []};
     for (var i = 0; i < this.player.hand.length; i++) {
+      //console.log(this.player.hand[i]);
       colourCounts[this.player.hand[i].color].push(i);
       if (this.player.actions[0].color === this.player.hand[i].color || this.player.hand[i].color === 'black') moves.push({kind: 'follow', cards: [i]});
     }

@@ -131,9 +131,13 @@ app.get('/:game', /*stormpath.loginRequired, */function(req, res) {
 });
 
 var socket = require('./server/socket');
-var socketServer = socket(io);
-// Socket.io Communication
-io.sockets.on('connection', socketServer);
+['no-thanks', 'glory-to-rome'].forEach(function(name) {
+  var nsp = io.of('/' + name);
+  var socketServer = socket(nsp);
+  // Socket.io Communication
+  nsp.on('connection', socketServer);
+});
+
 
 /**
  * Start Server

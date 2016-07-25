@@ -2,7 +2,7 @@ angular.module('Game', ['Game.directives', 'ngDraggable']);
 
 if (typeof io !== 'undefined') angular.module('Game').factory('socket', function ($rootScope, actions) {
   
-  var iosocket = io.connect();
+  var iosocket = io.connect('/' + $rootScope.game.gameName);
   var socket = {
     on: function (eventName, callback) {
       iosocket.on(eventName, function () {  
@@ -31,20 +31,21 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
 
     var data = {
       turn: $rootScope.game.turn,
-      move: $rootScope.game.moves[$rootScope.game.moves.length - 1],
-      room: $rootScope.game.room,
+      move: $rootScope.moves[$rootScope.moves.length - 1],
+      room: $rootScope.game.room
     };
 
     if ($rootScope.game.players[$rootScope.game.currentPlayer].ai) data.ai = JSON.parse(angular.toJson($rootScope.game));
-    if (game) data.game = game;
+    if (game) {
+      data.game = game;
+      data.moves = $rootScope.moves;
+    }
 
     socket.emit('update', data);
   }
 
   // message received indicating that another player has acted
   socket.on('change', function (data) {
-
-    console.log(data);
 
     if (data.turn < $rootScope.game.turn) return update($rootScope.game);
 
@@ -56,9 +57,15 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
     else if ((data.turn === 0 || data.turn > $rootScope.game.turn) && data.game) {
       $rootScope.game.started = true;
       $rootScope.game = data.game;
+      $rootScope.moves = data.moves;
     }
     
-    if ($rootScope.game.currentPlayer === $rootScope.meta.you) ding.play();
+    if ($rootScope.game.currentPlayer === $rootScope.meta.you && !$rootScope.game.finished) ding.play();
+
+    // if you are the player who created the game, send the moves to the server to be put in the database
+    if ($rootScope.game.finished && $rootScope.meta.you === 0) {
+      socket.emit('game-over', {game: $rootScope.game, moves: $rootScope.moves});
+    }
   });
 
   // when the game is first created

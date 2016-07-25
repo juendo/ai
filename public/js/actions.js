@@ -1,14 +1,18 @@
 angular.module('Game').factory('actions', function ($rootScope) {
   $rootScope.game = state;
   $rootScope.meta = {you: 0};
+  $rootScope.moves = [];
 
   actions.applyMove = function(move, game) {
+    
+    move.player = game.currentPlayer;
+
   	var newState = actions[move.kind](move, game, game.players[game.currentPlayer]);
 
     if (newState) {
     	this.checkIfGameOver(newState);
     	game.turn++;
-      game.moves.push(move);
+      $rootScope.moves.push(move);
     }
     
     return newState;

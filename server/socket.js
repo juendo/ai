@@ -1,18 +1,19 @@
 'use strict'
 
-var async = require('async');
-
 // export function for listening to the socket
-module.exports = function (io) {
+module.exports = function (nsp) {
 
   return function(socket) {
+
+    // when a player makes a move, update is sent
     socket.on('update', function (data) {
 
+      // make sure the player is in the room
       socket.join(data.room);
-      socket.broadcast.to(data.room).emit('change', data);
       if (gamesList.gamePlayers[data.room]) {
         delete gamesList.gamePlayers[data.room];
       }
+      socket.broadcast.to(data.room).emit('change', data);
 
       if (data.ai) {
         var state = data.ai;
@@ -35,10 +36,10 @@ module.exports = function (io) {
     socket.on('create', function(name) {
       if (
           name.length > 0 
-      &&  name.length <= 15) 
+      &&  name.length <= 10) 
       {
         var gameid = (Math.random().toString(36)+'00000000000000000').slice(2, 8);
-        while (io.sockets.adapter.rooms[gameid]) {
+        while (nsp.adapter.rooms[gameid]) {
           gameid = (Math.random().toString(36)+'00000000000000000').slice(2, 8);
         }
         gamesList.gamePlayers[gameid] = [name];
@@ -52,8 +53,8 @@ module.exports = function (io) {
     socket.on('add ai', function(data) {
       if (
           gamesList.gamePlayers[data.room]
-      &&  io.sockets.adapter.rooms[data.room] 
-      &&  Object.keys(io.sockets.adapter.rooms[data.room]).length < 5) {
+      &&  nsp.adapter.rooms[data.room] 
+      &&  Object.keys(nsp.adapter.rooms[data.room]).length < data.max) {
         gamesList.gamePlayers[data.room].push('AI');
         socket.emit('ai joined', 'AI');
         socket.broadcast.to(data.room).emit('ai joined', 'AI');
@@ -63,15 +64,21 @@ module.exports = function (io) {
     socket.on('join', function(data) {
       if (
           gamesList.gamePlayers[data.room]
-      &&  io.sockets.adapter.rooms[data.room] 
-      &&  Object.keys(io.sockets.adapter.rooms[data.room]).length < 5
-      &&  data.name.length > 0 && data.name.length <= 15) 
+      &&  nsp.adapter.rooms[data.room] 
+      &&  Object.keys(nsp.adapter.rooms[data.room]).length < data.max
+      &&  data.name.length > 0 && data.name.length <= 10) 
       {
         socket.join(data.room);
         gamesList.gamePlayers[data.room].push(data.name);
         socket.emit('accepted', gamesList.gamePlayers[data.room]);
         socket.broadcast.to(data.room).emit('joined', data.name);
       }
+    });
+
+    socket.on('game-over', function(data) {
+      // send moves of the game to the database
+      var save = require('../db/save_moves.js');
+      save(data);
     });
   };
 };

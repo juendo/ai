@@ -13,7 +13,7 @@ angular.module('Game').controller('setupController', function($scope, socket, ac
 
   // when join game button is pressed
   $scope.joinGame = function(game) {
-    socket.emit('join', {room: game.room, name: game.name});
+    socket.emit('join', {room: game.room, name: game.name, max: game.max});
   }
   
   // when start game is pressed
@@ -23,6 +23,6 @@ angular.module('Game').controller('setupController', function($scope, socket, ac
   }
 
   $scope.addAI = function(game) {
-    socket.emit('add ai', {room: game.room});
+    socket.emit('add ai', {room: game.room, max: game.max});
   }
 });

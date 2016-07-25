@@ -19,7 +19,8 @@ block player
       ng-src='/games/no-thanks/images/{{card}}.png'
     )
   .score-box(
-    ng-if='game.finished'
+    ng-if='game.finished',
+    ng-style='{"opacity": game.finished ? 1 : 0, "background-color": actions.winner(game) === $index ? "rgba(44, 167, 61, 0.5)" : "rgba(229, 2, 12, 0.5)"}'
   )
     .score
       | {{ actions.score(player) + " POINTS"}}

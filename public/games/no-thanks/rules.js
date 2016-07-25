@@ -15,8 +15,8 @@ var state = {
     chips: 0
   },
   currentPlayer: 0,
-  moves: [],
-  turn: 0
+  turn: 0,
+  max: 5
 };
 
 var actions = {
@@ -61,7 +61,6 @@ var actions = {
 
     game.started = true;
     game.turn = 0;
-    game.moves = [];
     return game;
   },
 
@@ -119,12 +118,12 @@ var actions = {
 
 if (typeof module !== 'undefined') { 
   actions.applyMove = function(move, game) {
+    
     var newState = actions[move.kind](move, game, game.players[game.currentPlayer]);
 
     if (newState) {
       actions.checkIfGameOver(newState);
       game.turn++;
-      game.moves.push(move);
     }
     
     return newState;

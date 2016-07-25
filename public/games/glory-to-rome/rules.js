@@ -36,10 +36,9 @@ var state = {
           'blue': 6
       },
       leader: 0,
-      moves: [],
       turn: 0,
       currentPlayer: 0,
-      glory: -1
+      max: 5
     };
 
 var actions = {
@@ -98,17 +97,60 @@ var actions = {
     'blue' : 3
   },
 
+  buildingColors: {
+    'Academy': 'red',
+    'Amphitheatre': 'grey',
+    'Aqueduct': 'grey',
+    'Archway': 'red',
+    'Atrium': 'red',
+    'Bar': 'yellow',
+    'Basilica': 'purple',
+    'Bath': 'red',
+    'Bridge': 'grey',
+    'Catacomb': 'blue',
+    'CircusMaximus': 'blue',
+    'Circus': 'green',
+    'Dock': 'green',
+    'Colosseum': 'blue',
+    'Forum': 'purple',
+    'Foundry': 'red',
+    'Fountain': 'purple',
+    'Garden': 'blue',
+    'Gate': 'red',
+    'Insula': 'yellow',
+    'Latrine': 'yellow',
+    'LudusMagnus': 'purple',
+    'Market': 'green',
+    'Palace': 'purple',
+    'Palisade': 'green',
+    'Prison': 'blue',
+    'Road': 'yellow',
+    'School': 'red',
+    'Scriptorium': 'blue',
+    'Sewer': 'blue',
+    'Shrine': 'red',
+    'Stairway': 'purple',
+    'Statue': 'purple',
+    'Storeroom': 'grey',
+    'Temple': 'purple',
+    'Tower': 'grey',
+    'Senate': 'grey',
+    'Villa': 'blue',
+    'Vomitorium': 'grey',
+    'Wall': 'grey'
+  },
+
   start: function(game) {
 
     if (game.players.length < 2) return false;
     game.turn = 0;
     game.started = true;
-    game.moves = [];
     game.deck = this.createDeck();
     for (var i = 0; i < game.players.length; i++) {
-      game.pool[game.deck.pop().color]++;
+      game.pool[this.buildingColors[game.deck.pop()]]++;
       while (game.players[i].hand.length < 4) {
-        game.players[i].hand.push(game.deck.pop());
+        var name = game.deck.pop();
+        game.players[i].hand.push({name: name, done: false, materials: [], selected: false, color: this.buildingColors[name]});
       }
       game.players[i].hand.push({name: 'Jack', color: 'black'});
       game.pool['black']--;
@@ -458,12 +500,7 @@ var actions = {
 
   createDeck: function() {
 
-    var copy1 = [{name: 'Academy', color: 'red', done: false, materials: [], selected: false, copy:1},{name: 'Amphitheatre', color: 'grey', done: false, materials: [], selected: false, copy:1},{name: 'Aqueduct', color: 'grey', done: false, materials: [], selected: false, copy:1},{name: 'Archway', color: 'red', done: false, materials: [], selected: false, copy:1},{name: 'Atrium', color: 'red', done: false, materials: [], selected: false, copy:1},{name: 'Bar', color: 'yellow', done: false, materials: [], selected: false, copy:1},{name: 'Bar', color: 'yellow', done: false, materials: [], selected: false, copy:4},{name: 'Basilica', color: 'purple', done: false, materials: [], selected: false, copy:1},{name: 'Bath', color: 'red', done: false, materials: [], selected: false, copy:1},{name: 'Bridge', color: 'grey', done: false, materials: [], selected: false, copy:1},{name: 'Catacomb', color: 'blue', done: false, materials: [], selected: false, copy:1},{name: 'CircusMaximus', color: 'blue', done: false, materials: [], selected: false, copy:1},{name: 'Circus', color: 'green', done: false, materials: [], selected: false, copy:1},{name: 'Circus', color: 'green', done: false, materials: [], selected: false, copy:4},{name: 'Dock', color: 'green', done: false, materials: [], selected: false, copy:1},{name: 'Dock', color: 'green', done: false, materials: [], selected: false, copy:4},{name: 'Colosseum', color: 'blue', done: false, materials: [], selected: false, copy:1},{name: 'Forum', color: 'purple', done: false, materials: [], selected: false, copy:1},{name: 'Foundry', color: 'red', done: false, materials: [], selected: false, copy:1},{name: 'Fountain', color: 'purple', done: false, materials: [], selected: false, copy:1},{name: 'Garden', color: 'blue', done: false, materials: [], selected: false, copy:1},{name: 'Gate', color: 'red', done: false, materials: [], selected: false, copy:1},{name: 'Insula', color: 'yellow', done: false, materials: [], selected: false, copy:1},{name: 'Insula', color: 'yellow', done: false, materials: [], selected: false, copy:4},{name: 'Latrine', color: 'yellow', done: false, materials: [], selected: false, copy:1},{name: 'Latrine', color: 'yellow', done: false, materials: [], selected: false, copy:4},{name: 'LudusMagnus', color: 'purple', done: false, materials: [], selected: false, copy:1},{name: 'Market', color: 'green', done: false, materials: [], selected: false, copy:1},{name: 'Market', color: 'green', done: false, materials: [], selected: false, copy:4},{name: 'Palace', color: 'purple', done: false, materials: [], selected: false, copy:1},{name: 'Palisade', color: 'green', done: false, materials: [], selected: false, copy:1},{name: 'Palisade', color: 'green', done: false, materials: [], selected: false, copy:4},{name: 'Prison', color: 'blue', done: false, materials: [], selected: false, copy:1},{name: 'Road', color: 'yellow', done: false, materials: [], selected: false, copy:1},{name: 'Road', color: 'yellow', done: false, materials: [], selected: false, copy:4},{name: 'School', color: 'red', done: false, materials: [], selected: false, copy:1},{name: 'Scriptorium', color: 'blue', done: false, materials: [], selected: false, copy:1},{name: 'Sewer', color: 'blue', done: false, materials: [], selected: false, copy:1},{name: 'Shrine', color: 'red', done: false, materials: [], selected: false, copy:1},{name: 'Stairway', color: 'purple', done: false, materials: [], selected: false, copy:1},{name: 'Statue', color: 'purple', done: false, materials: [], selected: false, copy:1},{name: 'Storeroom', color: 'grey', done: false, materials: [], selected: false, copy:1},{name: 'Temple', color: 'purple', done: false, materials: [], selected: false, copy:1},{name: 'Tower', color: 'grey', done: false, materials: [], selected: false, copy:1},{name: 'Senate', color: 'grey', done: false, materials: [], selected: false, copy:1},{name: 'Villa', color: 'blue', done: false, materials: [], selected: false, copy:1},{name: 'Vomitorium', color: 'grey', done: false, materials: [], selected: false, copy:1},{name: 'Wall', color: 'grey', done: false, materials: [], selected: false, copy:1}];
-    var copy2 = [], copy3 = [];
-    copy1.forEach(function(card) {
-      copy2.push({name:card.name, color:card.color, done:card.done, materials:card.materials, selected:card.selected, copy:card.copy + 1});
-      copy3.push({name:card.name, color:card.color, done:card.done, materials:card.materials, selected:card.selected, copy:card.copy + 2});
-    });
+    var deck = ['Academy','Amphitheatre','Aqueduct','Archway','Atrium','Bar','Bar','Basilica','Bath','Bridge','Catacomb','CircusMaximus','Circus','Circus','Dock','Dock','Colosseum','Forum','Foundry','Fountain','Garden','Gate','Insula','Insula','Latrine','Latrine','LudusMagnus','Market','Market','Palace','Palisade','Palisade','Prison','Road','Road','School','Scriptorium','Sewer','Shrine','Stairway','Statue','Storeroom','Temple','Tower','Senate','Villa','Vomitorium','Wall'];
     // helper to shuffle the deck
     shuffle = function(array) {
       var m = array.length, t, i;
@@ -475,7 +512,7 @@ var actions = {
       }
       return array;
     }
-    return shuffle(copy1.concat(copy2).concat(copy3));
+    return shuffle(deck.concat(deck).concat(deck));
   },
 
   // sets the current player to the next player with actions, 
@@ -762,9 +799,11 @@ var actions = {
 
     this.checkLatrine(player, game.pool);
 
-    player.hand.push(game.deck.pop());
+    var name = game.deck.pop();
+    player.hand.push({name: name, done: false, materials: [], selected: false, color: this.buildingColors[name]});
     while (player.hand.length < this.handLimit(player) && game.deck.length > 0) {
-      player.hand.push(game.deck.pop());
+      name = game.deck.pop();
+      player.hand.push({name: name, done: false, materials: [], selected: false, color: this.buildingColors[name]});
     }
     if (game.deck.length < 1) { game.finished = true };
     return this.skip(move, game, player);
@@ -773,7 +812,8 @@ var actions = {
   drawOne: function(move, game, player) {
     this.checkLatrine(player, game.pool);
     
-    player.hand.push(game.deck.pop());
+    var name = game.deck.pop();
+    player.hand.push({name: name, done: false, materials: [], selected: false, color: this.buildingColors[name]});
     if (game.deck.length < 1) { game.finished = true };
     return this.skip(move, game, player);
   },
@@ -831,7 +871,7 @@ var actions = {
       && !action.takenFromDeck
       &&  bar)
       {
-        var col = game.deck.pop().color;
+        var col = this.buildingColors[game.deck.pop()];
         player.clientele.push(this.roles[col]);
         if (game.deck.length === 0) game.finished = true;
         action.takenFromDeck = true;
@@ -1013,7 +1053,7 @@ var actions = {
       &&  game.deck.length
       && !action.takenFromStockpile)
       {
-        player.vault.push({visibility: 'none', color: game.deck.pop().color});
+        player.vault.push({visibility: 'none', color: this.buildingColors[game.deck.pop()]});
         if (game.deck.length == 0) game.finished = true;
         action.takenFromStockpile = true;
         return (!basilica || !!action.takenFromHand) ? this.skip(move, game, player) : game;
@@ -1078,9 +1118,8 @@ var actions = {
     && !action.usedFountain) 
     {
       action.usedFountain = true;
-      var card = game.deck.pop();
-      card.selected = true;
-      player.hand.push(card);
+      var name = game.deck.pop();
+      player.hand.push({name: name, done: false, materials: [], selected: true, color: this.buildingColors[name]});
       if (game.deck.length <= 0) game.finished = true;
       return game;
     }
@@ -1187,12 +1226,12 @@ var actions = {
 
 if (typeof module !== 'undefined') {
   actions.applyMove = function(move, game) {
+    
     var newState = actions[move.kind](move, game, game.players[game.currentPlayer]);
 
     if (newState) {
       actions.checkIfGameOver(newState);
       game.turn++;
-      game.moves.push(move);
     }
     
     return newState;
