@@ -50,7 +50,7 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
       actions.applyMove(data.move, $rootScope.game);
     } 
 
-    else if (data.turn > $rootScope.game.turn && data.game) {
+    else if ((data.turn === 0 || data.turn > $rootScope.game.turn) && data.game) {
       $rootScope.game.started = true;
       $rootScope.game = data.game;
     }
