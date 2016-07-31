@@ -39,6 +39,16 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
     if (game) {
       data.game = game;
       data.moves = $rootScope.moves;
+      if (!data.turn) $rootScope.initial = JSON.parse(angular.toJson(game));
+    }
+
+    // if you are the player who created the game, send the moves to the server to be put in the database
+    if ($rootScope.game.finished && $rootScope.meta.you === 0) {
+      socket.emit('game-over', {
+        initial: $rootScope.initial,
+        moves: $rootScope.moves,
+        winner: actions.winner($rootScope.game)
+      });
     }
 
     socket.emit('update', data);
@@ -57,6 +67,7 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
     else if ((data.turn === 0 || data.turn > $rootScope.game.turn) && data.game) {
       $rootScope.game.started = true;
       $rootScope.game = data.game;
+      if (data.turn === 0) $rootScope.initial = JSON.parse(JSON.stringify(data.game));
       $rootScope.moves = data.moves;
     }
     
@@ -64,7 +75,11 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
 
     // if you are the player who created the game, send the moves to the server to be put in the database
     if ($rootScope.game.finished && $rootScope.meta.you === 0) {
-      socket.emit('game-over', {game: $rootScope.game, moves: $rootScope.moves});
+      socket.emit('game-over', {
+        initial: $rootScope.initial,
+        moves: $rootScope.moves,
+        winner: actions.winner($rootScope.game)
+      });
     }
   });
 

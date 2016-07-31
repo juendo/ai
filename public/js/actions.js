@@ -18,5 +18,15 @@ angular.module('Game').factory('actions', function ($rootScope) {
     return newState;
   }
 
+  Array.prototype.contains = function(obj) {
+    var i = this.length;
+    while (i--) {
+      if (this[i] === obj) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   return actions;
 });

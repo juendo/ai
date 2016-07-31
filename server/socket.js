@@ -15,7 +15,7 @@ module.exports = function (nsp) {
       }
       socket.broadcast.to(data.room).emit('change', data);
 
-      if (data.ai) {
+      if (data.ai && !data.ai.finished) {
         var state = data.ai;
         data.game = undefined;
         var createGame = require('../ai/game');
@@ -23,13 +23,15 @@ module.exports = function (nsp) {
         var actions = require('../public/games/' + state.gameName + '/rules').actions;
 
         var game = createGame(state);
-        data.move = ai.getMove(game, state.iterations);
-        actions.applyMove(data.move, state);
-        data.turn = state.turn;
-        data.update = true;
-        socket.emit('change', data);
-        data.update = false;
-        socket.broadcast.to(data.room).emit('change', data);
+        ai.getMove(game, state.iterations, function(move) {
+          data.move = move;
+          actions.applyMove(data.move, state);
+          data.turn = state.turn;
+          data.update = true;
+          socket.emit('change', data);
+          data.update = false;
+          socket.broadcast.to(data.room).emit('change', data);
+        }); 
       }
     });
 

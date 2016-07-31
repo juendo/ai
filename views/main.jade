@@ -1,16 +1,91 @@
 doctype html
-html
+html(lang='en')
   head
-    script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js")
-    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js")
-    link(href='https://fonts.googleapis.com/css?family=Montserrat', rel='stylesheet', type='text/css')
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    meta(name='description', content='')
+    meta(name='author', content='')
+    title Online Games
+    // Bootstrap Core CSS
     link(rel='stylesheet', href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css")
-    link(rel='stylesheet', href='/css/home.css')
-  body(style='background-color: white;')
+    // Custom CSS
+    link(href='css/1-col-portfolio.css', rel='stylesheet')
+  body
+    // Navigation
+    nav.navbar.navbar-inverse.navbar-fixed-top(role='navigation')
+      .container
+        // Brand and toggle get grouped for better mobile display
+        .navbar-header
+          button.navbar-toggle(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1')
+            span.sr-only Toggle navigation
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.navbar-brand(href='#') Neil's Game Website
+        // Collect the nav links, forms, and other content for toggling
+        #bs-example-navbar-collapse-1.collapse.navbar-collapse
+          ul.nav.navbar-nav
+            if user
+              form(action='/logout', method='post')
+                input(type='submit', value='Logout')
+            else 
+              li
+                a(href='/login') Login
+              li
+                a(href='/register') Register
+        // /.navbar-collapse
+      // /.container
+    // Page Content
     .container
+      // Page Heading
       .row
-        .Absolute-Center.is-Responsive
-          .col-sm-12.col-md-10.col-md-offset-1
-            for game in games
-              .form-group.game-button
-                a.btn.btn-def.btn-block.setup#new-game(href='#{game.link}', style='background-color:#{game.color};') #{game.name}
+        .col-lg-12
+          h1.page-header
+            | Choose a game
+            small Play it now
+      // /.row
+      for game in games
+        .row
+          .col-md-7
+            a(href='/#{game.link}')
+              img.img-responsive(src='/games/#{game.link}/images/cover.jpg', alt='')
+          .col-md-5
+            h3 #{game.name}
+            p
+              | #{game.description}
+            a.btn.btn-primary(href='/#{game.link}')
+              | Play
+              span.glyphicon.glyphicon-chevron-right
+        hr
+      // Pagination
+      .row.text-center
+        .col-lg-12
+          ul.pagination
+            li
+              a(href='#') «
+            li.active
+              a(href='#') 1
+            li
+              a(href='#') 2
+            li
+              a(href='#') 3
+            li
+              a(href='#') 4
+            li
+              a(href='#') 5
+            li
+              a(href='#') »
+      // /.row
+      hr
+      // Footer
+      footer
+        .row
+          .col-lg-12
+            p Copyright © Neil Henderson 2016
+        // /.row
+    // /.container
+    // jQuery
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js")
+    // Bootstrap Core JavaScript
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js")

@@ -1,70 +1,68 @@
-var translateMove = function(move, game) {
-  switch (move.kind) {
-    case 'skip':
-      return {kind: 'skip'};
-    case 'sewer':
-      return {kind: 'sewer', color: move.data.card.color};
-    case 'fountain':
-      return {kind: 'fountain'};
-    case 'prison':
-      for (var i = 0; i < game.players.length; i++) {
-        if (game.players[i].name === move.opponent.name) { 
-          var opponent = i;
-          break;
-        }
-      }
-      return {kind: 'prison', opponent: opponent, name: move.building.name};
-    case 'basilica':
-      return {kind: 'basilica', name: move.data.card.name};
-    case 'atrium':
-      return {kind: 'atrium'};
-    case 'merchant':
-      return {kind: 'merchant', color: move.data.material};
-    case 'fillFromPool':
-      var index = (typeof move.player !== 'undefined') ? move.player : game.currentPlayer;
-      return {kind: 'fillFromPool', name: game.players[index].buildings[move.building].name, color: move.color, opponent: (index === game.currentPlayer) ? "you" : index};
-    case 'fillFromStockpile':
-      var index = (typeof move.player !== 'undefined') ? move.player : game.currentPlayer;
-      return {kind: 'fillFromStockpile', name: game.players[index].buildings[move.building].name, color: move.data.material, opponent: (index === game.currentPlayer) ? "you" : index};
-    case 'fillFromHand':
-      return {kind: 'fillFromHand', name: game.players[game.currentPlayer].buildings[move.building].name, card: move.data.card.name};
-    case 'dock':
-      return {kind: 'dock', name: move.data.card.name};
-    case 'laborer':
-      return {kind: 'laborer', color: move.color};
-    case 'aqueduct':
-      return {kind: 'aqueduct', name: move.data.card.name};
-    case 'bar':
-      return {kind: 'bar'};
-    case 'patron':
-      return {kind: 'patron', color: move.color};
-    case 'takeJack':
-      return {kind: 'takeJack'};
-    case 'drawOne':
-      return {kind: 'drawOne'};
-    case 'refill':
-      return {kind: 'refill'};
-    case 'lay':
-      return {kind: 'lay', name: game.players[game.currentPlayer].hand[move.index].name, color: move.color};
-    case 'follow':
-      return {kind: 'follow', cards: move.cards.map(function(index) {
-        return game.players[game.currentPlayer].hand[index].name;
-      })};
-    case 'lead':
-      return {kind: 'lead', cards: move.cards.map(function(index) {
-        return game.players[game.currentPlayer].hand[index].name;
-      }), color: move.role};
-    case 'legionary':
-      return {kind: 'legionary', color: move.data.card.color};
-    case 'romeDemands':
-      return {kind: 'romeDemands', name: move.data.card.name};
-    case 'vomitorium':
-      return {kind: 'vomitorium'};
-    default:
-      return {};
-  }
-}
-
 module.exports = function(data) {
-	console.log(data);
+
+  console.log(data);
+
+  var moves = data.moves;
+  var winner = data.winner;
+  var state = data.initial;
+
+  var translate = require('../public/games/' + state.gameName + '/moves');
+  var rules = require('../public/games/' + state.gameName + '/rules');
+  var actions = rules.actions;
+
+	var MongoClient = require('mongodb').MongoClient,
+    assert = require('assert');
+
+  // Connection URL
+  var url = require('./password');
+
+  var saveMoves = function(db, callback) {
+
+    var store = db.collection(state.gameName);
+
+    store.insert(moves.map(function(move) {
+
+      var m = {
+        move: translate(move, state),
+        user: state.players[state.currentPlayer].name,
+        winning: winner.indexOf(state.currentPlayer) >= 0,
+        players: state.players.length,
+        turn: state.turn
+      }
+
+      // apply the move to get the next state
+      state = JSON.parse(JSON.stringify(actions.applyMove(move, state)));
+
+      return m;
+    }));
+
+    db.collection(state.gameName + '-wins').drop();
+
+    db.collection(state.gameName).aggregate([
+        {
+          $group: {
+            _id: '$move',
+            winning: { $sum: { $cond: ['$winning', 1, 0] } },
+            total: { $sum: 1 }
+          }
+        }
+      ]).toArray(function(err, docs) {
+      assert.equal(err, null);
+      console.log("Found the following records");
+      db.collection(state.gameName + '-wins').insert(docs);
+      console.log(JSON.stringify(docs));
+
+      callback(docs);
+    });
+  }
+
+  // Use connect method to connect to the server
+  MongoClient.connect(url, function(err, db) {
+    assert.equal(null, err);
+    console.log("Connected succesfully to server");
+
+    saveMoves(db, function() {
+        db.close();
+    });
+  });
 }

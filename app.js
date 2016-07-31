@@ -3,7 +3,7 @@
  * Module dependencies
  */
 var express = require('express');
-//var stormpath = require('express-stormpath');
+var stormpath = require('express-stormpath');
 var logger = require('morgan');
 var methodOverride = require('method-override');
 var session = require('express-session');
@@ -44,14 +44,20 @@ app.use(multer());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-/*app.use(stormpath.init(app, {
+app.use(stormpath.init(app, {
+  preRegistrationHandler: function (formData, req, res, next) {
+    if (formData.username.length > 10) return next(new Error('Username can\'t be longer than 10 characters.'));
+    next();
+  },
   website: true,
   web: {
     login: {
-      enabled: true
+      enabled: true,
+      nextUri: '/'
     },
     logout: {
-      enabled: true
+      enabled: true,
+      nextUri: '/'
     },
     me: {
       enabled: false
@@ -60,35 +66,54 @@ app.use(express.static(path.join(__dirname, 'public')));
       enabled: false
     },
     register: {
-      enabled: true
+      form: {
+        fields: {
+          givenName: {
+            enabled: false
+          },
+          surname: {
+            enabled: false
+          },
+          username: {
+            enabled: true,
+            label: 'Username',
+            placeholder: 'E.g. Delargsson, binman',
+            required: true,
+            type: 'text'
+          }
+        },
+        fieldOrder: [ 'username', 'email', 'password' ]
+      }
     }
   }
 }));
-*/
 
 /**
  * Routes
  */
 
-app.get('/', function(req, res) {
+app.get('/', stormpath.getUser, function(req, res) {
   res.render('views/main', {
     games: [
       {
         link: 'no-thanks',
         name: 'No Thanks',
+        description: 'No Thanks! is a card game designed to be as simple as it is engaging. The rules are simple. Each turn, players have two options: play one of their chips to avoid picking up the current face-up card, or pick up the face-up card (along with any chips that have already been played on that card) and turn over the next card. However, the choices aren\'t so easy as players compete to have the lowest score at the end of the game.',
         color: '#ca0'
       },
       {
         link: 'glory-to-rome',
         name: 'Glory to Rome',
+        description: 'In 64 A.D., a great fire originating from the slums of Rome quickly spreads to destroy much of the city, including the imperial palace. Upon hearing news of the fire, Emperor Nero Caesar races back to Rome from his private estate in Antium and sets up shelters for the displaced population. Reporting directly to Nero, you are responsible for rebuilding the structures lost in the fire and restoring Glory to Rome.',
         color: '#222'
       }
-    ]
+    ],
+    user: req.user
   });
 });
 
 // serve index and view partials
-app.get('/:game', /*stormpath.loginRequired, */function(req, res) {
+app.get('/:game', stormpath.loginRequired, function(req, res) {
 
     // render template and store the result in html variable
     res.render('public/games/' + req.params.game + '/view', {
@@ -103,11 +128,7 @@ app.get('/:game', /*stormpath.loginRequired, */function(req, res) {
         inactive: {
           'glory-to-rome': '#333',
           'no-thanks': '#550'
-        }[req.params.game],
-        component: {
-          class: 'person',
-          repeat: 'card in player.cards'
-        }
+        }[req.params.game]
       },
       function(err, html) {
         res.render('views/index', {
@@ -124,7 +145,8 @@ app.get('/:game', /*stormpath.loginRequired, */function(req, res) {
               'glory-to-rome': '#333',
               'no-thanks': '#550'
             }[req.params.game],
-            view: html
+            view: html,
+            username: req.user.username
         });
 
     });
@@ -142,14 +164,14 @@ var socket = require('./server/socket');
 /**
  * Start Server
  */
-
+/*
 server.listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
-});
-/*
+});*/
+
 app.on('stormpath.ready', function() {
   server.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));
   });
-});*/
+});
 

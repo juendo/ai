@@ -88,7 +88,7 @@ class LegalMoves {
       }, this);
     }
 
-    moves.push({kind: 'refill'});
+    moves.push({kind: this.player.hand.length < this.actions.handLimit(this.player) ? 'refill' : 'drawOne' });
     if (this.game.pool['black'] > 0) {
       moves.push({kind: 'takeJack'});
     }
@@ -120,7 +120,7 @@ class LegalMoves {
       }, this);
     }
 
-    moves.push({kind: 'refill'});
+    moves.push({kind: this.player.hand.length < this.actions.handLimit(this.player) ? 'refill' : 'drawOne' });
     if (this.game.pool['black'] > 0) {
       moves.push({kind: 'takeJack'});
     }
@@ -373,7 +373,7 @@ class LegalMoves {
   think() {
     var moves = [];
     if (this.game.pool['black']) moves.push({kind: 'takeJack'});
-    moves.push({kind: 'refill'});
+    moves.push({kind: this.player.hand.length < this.actions.handLimit(this.player) ? 'refill' : 'drawOne' });
     if (this.player.actions[0].skippable) moves.push({kind: 'skip'});
     if (this.actions.hasAbilityToUse('Vomitorium', this.player) && this.player.hand.length) {
       moves.push({kind: 'vomitorium'});

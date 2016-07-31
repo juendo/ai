@@ -12,8 +12,24 @@ var findDocuments = function(db, callback) {
   // Find some documents
 
   // remove undesired names
-  moves.remove(queries.delete_names);
+  //moves.remove(queries.delete_names);
 
+  db.collection('glory-to-rome').aggregate([
+      {
+        $group: {
+          _id: '$move',
+          winning: { $sum: { $cond: ['$winning', 1, 0] } },
+          total: { $sum: 1 }
+        }
+      }
+    ]).toArray(function(err, docs) {
+    assert.equal(err, null);
+    console.log("Found the following records");
+    db.collection('glory-to-rome-wins').insert(docs);
+    console.log(JSON.stringify(docs));
+
+    callback(docs);
+  });
   // rename
   //moves.update({"game.room": "f57q7y"}, {$set: {winner: "Hendo"}}, {multi: true});
 

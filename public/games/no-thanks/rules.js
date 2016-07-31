@@ -23,19 +23,23 @@ var actions = {
 
   winner: function(state) {
     var minScore = 1000;
-    var winner = -1;
+    var winner = [];
     var l = state.players.length;
     for (var i = 0; i < l; i++) {
       var score = this.score(state.players[i]);
       if (score < minScore) {
         minScore = score;
-        winner = i;
+        winner = [i];
+      } else if (score === minScore) {
+        winner.push(i);
       }
     }
     return winner;
   },
 
   start: function(game) {
+
+    if (game.players.length < 3) return false;
 
     var shuffle = function(array) {
       var m = array.length, t, i;

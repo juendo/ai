@@ -78,7 +78,7 @@ block player
     )
   .score-box(
     ng-if='game.finished',
-    ng-style='{"opacity": game.finished ? 1 : 0, "background-color": actions.winner(game) === $index ? "rgba(44, 167, 61, 0.5)" : "rgba(229, 2, 12, 0.5)"}'
+    ng-style='{"opacity": game.finished ? 1 : 0, "background-color": actions.winner(game).contains($index) ? "rgba(44, 167, 61, 0.5)" : "rgba(229, 2, 12, 0.5)"}'
   )
     .score
       | {{ player.winner ? "" : actions.score(player)}}
@@ -154,10 +154,6 @@ block bottom
   )
   .deck-counter
     | {{ game.deck.length }}
-  button.draw-one(
-    ng-click='yourTurn() && drawOne(you().actions[0].kind, game)'
-  )
-    | DRAW 1
   .pool
     button.pool-counter(
       ng-drag='game.pool[color] > 0 && yourTurn() && actions.hasAbilityToUse("Archway", you())',

@@ -35,23 +35,25 @@ angular.module('Game').controller('GameController', function($scope, socket, act
   // called when the deck is clicked (and you are the current player)
   $scope.deckClicked = function(action, game) {
 
-    if (action == 'Lead' || action == 'Follow' || action == 'Think') 
-      var move = {kind: 'refill'};
-    else if (action == 'Merchant') 
+    var player = game.players[game.currentPlayer];
+
+    var cards = [];
+    for (var i = 0; i < player.hand.length; i++) {
+      if (player.hand[i].selected) {
+        cards.push(i);
+      }
+    }
+
+    if ((action == 'Lead' || action == 'Follow' || action == 'Think') && !actions.hasAbilityToUse('Latrine', player))
+      var move = {kind: player.hand.length < actions.handLimit(player) ? 'refill' : 'drawOne' };
+    else if ((action == 'Lead' || action == 'Follow' || action == 'Think') && cards.length <= 1)
+      var move = {kind: player.hand.length < actions.handLimit(player) ? 'refill' : 'drawOne', latrine: cards.length ? cards[0] : undefined};
+    else if (action == 'Merchant')
       var move = {kind: 'atrium'};
     else if (action == 'Patron') 
       var move = {kind: 'bar'};
     else if (action == 'Craftsman') 
       var move = {kind: 'fountain'};
-
-    if ((typeof move !== 'undefined') && actions.applyMove(move, game)) socket.update();
-  }
-
-  $scope.drawOne = function(action, game) {
-
-    if (action == 'Lead' || action == 'Follow' || action == 'Think') {
-      var move = {kind: 'drawOne'};
-    }
 
     if ((typeof move !== 'undefined') && actions.applyMove(move, game)) socket.update();
   }
@@ -71,8 +73,19 @@ angular.module('Game').controller('GameController', function($scope, socket, act
 
   $scope.jackClicked = function(action, game) {
 
-    if (action == 'Lead' || action == 'Follow' || action == 'Think')
+    var player = game.players[game.currentPlayer];
+
+    var cards = [];
+    for (var i = 0; i < player.hand.length; i++) {
+      if (player.hand[i].selected) {
+        cards.push(i);
+      }
+    }
+
+    if ((action == 'Lead' || action == 'Follow' || action == 'Think') && !actions.hasAbilityToUse('Latrine', player))
       var move = {kind: 'takeJack'};
+    else if ((action == 'Lead' || action == 'Follow' || action == 'Think') && cards.length <= 1)
+      var move = {kind: 'takeJack', latrine: cards.length ? cards[0] : undefined};
 
     if ((typeof move !== 'undefined') && actions.applyMove(move, game)) socket.update();
   }

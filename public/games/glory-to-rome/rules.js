@@ -44,9 +44,11 @@ var state = {
 var actions = {
 
   winner: function(state) {
+
     var maxScore = 0;
     var maxHand = -1;
-    var winner = -1;
+    var winner = [];
+    var forums = [];
     var l = state.players.length;
     for (var i = 0; i < l; i++) {
       var score = this.score(state.players[i]);
@@ -54,10 +56,13 @@ var actions = {
       if ((score > maxScore) || (score === maxScore && hand > maxHand)) {
         maxScore = score;
         maxHand = hand;
-        winner = i;
+        winner = [i];
+      } else if (score === maxScore && hand === maxHand) {
+        winner.push(i);
       }
+      if (state.players[i].winner) forums.push(i);
     }
-    return winner;
+    return !forums.length ? winner : forums;
   },
 
   roles: { 
