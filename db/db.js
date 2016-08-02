@@ -17,7 +17,11 @@ var findDocuments = function(db, callback) {
   db.collection('glory-to-rome').aggregate([
       {
         $group: {
-          _id: '$move',
+          // group by number of players
+          _id: {
+            move: '$move',
+            players: '$players'
+          },
           winning: { $sum: { $cond: ['$winning', 1, 0] } },
           total: { $sum: 1 }
         }

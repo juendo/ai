@@ -9,6 +9,7 @@ module.exports = function(data) {
   var translate = require('../public/games/' + state.gameName + '/moves');
   var rules = require('../public/games/' + state.gameName + '/rules');
   var actions = rules.actions;
+  var legal = require('../public/games/' + state.gameName + '/legal');
 
 	var MongoClient = require('mongodb').MongoClient,
     assert = require('assert');
@@ -22,26 +23,43 @@ module.exports = function(data) {
 
     store.insert(moves.map(function(move) {
 
+      // check if the move was forced
+
       var m = {
         move: translate(move, state),
         user: state.players[state.currentPlayer].name,
         winning: winner.indexOf(state.currentPlayer) >= 0,
         players: state.players.length,
-        turn: state.turn
+        turn: state.turn,
+        forced: false
       }
+
+      // check if move was the only option
+      if (legal({game: state}, null).length === 1) m.forced = true;
 
       // apply the move to get the next state
       state = JSON.parse(JSON.stringify(actions.applyMove(move, state)));
 
       return m;
-    }));
+    }, this));
 
     db.collection(state.gameName + '-wins').drop();
 
     db.collection(state.gameName).aggregate([
         {
+          $match: {
+            'forced': {
+              $ne: true
+            }
+          }
+        },
+        {
           $group: {
-            _id: '$move',
+            // group by number of players
+            _id: {
+              move: '$move',
+              players: '$players'
+            },
             winning: { $sum: { $cond: ['$winning', 1, 0] } },
             total: { $sum: 1 }
           }
@@ -58,11 +76,14 @@ module.exports = function(data) {
 
   // Use connect method to connect to the server
   MongoClient.connect(url, function(err, db) {
-    assert.equal(null, err);
-    console.log("Connected succesfully to server");
+    if (err) {
+      console.log(err);
+    } else {
+      console.log("Connected succesfully to server");
 
-    saveMoves(db, function() {
-        db.close();
-    });
+      saveMoves(db, function() {
+          db.close();
+      });
+    }
   });
 }

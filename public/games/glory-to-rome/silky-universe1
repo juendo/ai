@@ -14,8 +14,6 @@ write - 34 pages ~100 hours
 
 tidy css ~ 4 hours
 
-program ismcts ~ 24 hours
-
 run ai tests ~ 20 hours
 
 implement another game ~ 24 hours
@@ -24,4 +22,4 @@ tidy up code ~ 24 hours
 
 tests ~ 12 hours
 
-integrate opponent policies into ai ~ 10 hours
+do games for which ismcts performs closer to mcts have more appeal

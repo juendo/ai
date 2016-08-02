@@ -1,6 +1,6 @@
 'use strict'
 
-var Node = require('tree-node');
+var Node = require("tree-node");
 var deepEqual = require('deep-equal');
 
 var rand = function(min, max) {
@@ -32,11 +32,8 @@ Math.log = (function() {
     return log(n)/(base ? log(base) : 1);
   };
 })();
-
-
-
-// class implementing basic Monte Carlo Tree Search
-class MCTS {
+ 
+class ISMCTS {
 
 	constructor(game, docs, pols) {
 		// docs have a move, a number of wins and a number of plays
@@ -71,30 +68,21 @@ class MCTS {
 
 	getMove(state, n) {
 
-		var legal = this.game.legalMoves(state);
-		if (legal.length === 1) return legal[0];
-
 		// create game tree
 		var root = new Node();
-		root.data({state: this.game.clone(state), wins: 0, plays: 0});
+		root.data('infSet', []);
 
 		while (n--) {
+			// choose a determinisation from the root's information set
+			root.data('determinisation', this.game.determinise(state));
 
-			//console.log(n);
-			// add new node to the tree
-			var node = this.select(root)
-
-			// if the node is non-terminal
-			if (!this.game.isTerminal(node.data('state'))) {
-				node = this.expand(node);
-				// find the winner
-				var winner = this.simulate(this.game.clone(node.data('state')));
-			} else {
-				var winner = this.game.winner(node.data('state'));
+			var node = this.select(root);
+			var unchecked = this.uncheckedActions(node);
+			if (unchecked.length) {
+				node = this.expand(node, unchecked);
 			}
-
+			var winner = this.simulate(this.game.clone(node.data('determinisation')));
 			this.backpropagate(node, winner);
-
 		}
 
 		// return the optimal move
@@ -106,39 +94,34 @@ class MCTS {
 		}).reduce(function(prev, current) {
 			return prev.data('winRatio') > current.data('winRatio') ? prev : current;
 		}).data('move');
-
 	}
 
 	select(node) {
-		//console.log('select');
-		// while the tree has been searched fully, select an action using the UCT algorithm
-		while (!this.game.isTerminal(node.data('state')) && this.uncheckedMoves(node).length === 0) {
-			node = this.uct(node);
-			//console.log('traverse');
+
+		while (!this.game.isTerminal(node.data('determinisation')) && !this.uncheckedActions(node).length) {
+			node = this.bestChild(node);
 		}
-		
 		return node;
 	}
 
-	expand(node) {
-		// choose random unchecked move and create new node
-		var unchecked = this.uncheckedMoves(node);
+	expand(node, unchecked) {
+
 		var move = unchecked[Math.floor(Math.random() * unchecked.length)];
 
-		// add new node
 		var child = new Node();
 
-		var doc = this.docs[JSON.stringify(this.translate(move, node.data('state')))];
-		var wins = doc ? doc.ratio * this.db : this.db / node.data('state').players.length;
+		var doc = this.docs[JSON.stringify(this.translate(move, node.data('determinisation')))];
+		var wins = doc ? doc.ratio * this.db : this.db / node.data('determinisation').players.length;
 
 		child.data({
+			infSet: node.data('infSet').concat([this.game.translateMove(move, node.data('determinisation'))]),
+			determinisation: this.game.applyMove(move, this.game.clone(node.data('determinisation'))),
 			move: move,
-			state: this.game.applyMove(move, this.game.clone(node.data('state'))),
 			wins: wins,
-			plays: this.db
+			plays: this.db,
+			availability: 0
 		});
 		node.appendChild(child);
-
 		return child;
 	}
 
@@ -194,47 +177,45 @@ class MCTS {
 			// update plays
 			node.data('plays', node.data('plays') + 1);
 			// update wins
-			if (winner.indexOf(this.game.currentPlayer(node._parent.data('state'))) >= 0)
+			if (winner.indexOf(this.game.currentPlayer(node._parent.data('determinisation'))) >= 0)
 				node.data('wins', node.data('wins') + 1);
 			
+			// get legal moves for parent determinisation
+			var legal = {};
+			this.game.legalMoves(node._parent.data('determinisation')).forEach(function(move) {
+				legal[JSON.stringify(this.game.translateMove(move, node._parent.data('determinisation')))] = move;
+			}, this);
+
+			node._parent.childIds.forEach(function(id) {
+				var sibling = node._parent.getNode(id);
+				var infSet = sibling.data('infSet');
+				if (legal[JSON.stringify(infSet[infSet.length - 1])]) sibling.data('availability', sibling.data('availability') + 1);
+			}, this);
+
 			node = node._parent;
 		}
 	}
 
-	uncheckedMoves(node) {
+	bestChild(node) {
 
-		// get legal moves and checked moves
-		var legal = this.game.legalMoves(node.data('state'));
-
-		var checked = node.childIds.map(function(id) {
-			return node.getNode(id).data('move');
+		// get the legal moves for the determinisation
+		var legal = {};
+		this.game.legalMoves(node.data('determinisation')).forEach(function(move) {
+			legal[JSON.stringify(this.game.translateMove(move, node.data('determinisation')))] = move;
+		}, this);
+		// get the compatible child nodes
+		var compatible = node.childIds.filter(function(id) {
+			var infSet = node.getNode(id).data('infSet');
+			return legal[JSON.stringify(infSet[infSet.length - 1])];
 		});
 
-		var unchecked = [];
-		for (var i = 0; i < legal.length; i++) {
-			var chkd = false;
-			for (var j = 0; j < checked.length; j++) {
-				if (deepEqual(legal[i], checked[j])) {
-					chkd = true;
-					break;
-				}
-			}
-			if (!chkd) unchecked.push(legal[i]);
-		}
-
-		// return their difference
-		return unchecked;
-	}
-
-	uct(node) {
-
-		// calculate sum of plays of child nodes
-		var logSum = Math.log(node.childIds.map(function(id) {
-			return node.getNode(id).data('plays');
+		// apply selection algorithm
+		var logSum = Math.log(compatible.map(function(id) {
+			return node.getNode(id).data('availability');
 		}).reduce((a, b) => a + b));
 
 		// return the optimal node
-		return node.childIds.map(function(id) {
+		var optimal = compatible.map(function(id) {
 
 			var child = node.getNode(id);
 
@@ -245,6 +226,39 @@ class MCTS {
 		}, this).reduce(function(prev, current) {
 			return (prev.v > current.v) ? prev : current;
 		}).node;
+
+		var infSet = optimal.data('infSet');
+		optimal.data('determinisation', this.game.applyMove(legal[JSON.stringify(infSet[infSet.length - 1])], this.game.clone(node.data('determinisation'))));
+
+		return optimal;
+	}
+
+	uncheckedActions(node) {
+
+		// get legal moves for current determinisation
+		var legal = this.game.legalMoves(node.data('determinisation'));
+
+		// get the moves for the child nodes
+		var checked = node.childIds.map(function(id) {
+			var infSet = node.getNode(id).data('infSet');
+			return infSet[infSet.length - 1];
+		});
+
+		// find out which legal moves do not already have child nodes
+		var unchecked = [];
+		for (var i = 0; i < legal.length; i++) {
+			var chkd = false;
+			var translated = this.game.translateMove(legal[i], node.data('determinisation'));
+			for (var j = 0; j < checked.length; j++) {
+				if (deepEqual(translated, checked[j])) {
+					chkd = true;
+					break;
+				}
+			}
+			if (!chkd) unchecked.push(legal[i]);
+		}
+
+		return unchecked;
 	}
 }
 
@@ -258,7 +272,7 @@ module.exports.getMove = function(game, n, callback) {
 		user_pol(game.getState().gameName, game.getState().players.map(function(player) {
 			return player.name;
 		}), function(pols) {
-			callback((new MCTS(game, freq, pols)).getMove(game.getState(), n));
+			callback((new ISMCTS(game, freq, pols)).getMove(game.getState(), n));
 		});
 	});
 }

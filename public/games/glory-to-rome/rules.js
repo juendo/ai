@@ -506,21 +506,22 @@ var actions = {
     return game.finished;
   },
 
+  shuffle: function(array) {
+    var m = array.length, t, i;
+    while (m) {
+      i = Math.floor(Math.random() * m--);
+      t = array[m];
+      array[m] = array[i];
+      array[i] = t;
+    }
+    return array;
+  },
+
   createDeck: function() {
 
     var deck = ['Academy','Amphitheatre','Aqueduct','Archway','Atrium','Bar','Bar','Basilica','Bath','Bridge','Catacomb','CircusMaximus','Circus','Circus','Dock','Dock','Colosseum','Forum','Foundry','Fountain','Garden','Gate','Insula','Insula','Latrine','Latrine','LudusMagnus','Market','Market','Palace','Palisade','Palisade','Prison','Road','Road','School','Scriptorium','Sewer','Shrine','Stairway','Statue','Storeroom','Temple','Tower','Senate','Villa','Vomitorium','Wall'];
     // helper to shuffle the deck
-    shuffle = function(array) {
-      var m = array.length, t, i;
-      while (m) {
-        i = Math.floor(Math.random() * m--);
-        t = array[m];
-        array[m] = array[i];
-        array[i] = t;
-      }
-      return array;
-    }
-    return shuffle(deck.concat(deck).concat(deck));
+    return this.shuffle(deck.concat(deck).concat(deck));
   },
 
   // sets the current player to the next player with actions, 
@@ -611,6 +612,7 @@ var actions = {
     if (card.selected || card.name === 'Jack') {
       return false;
     }
+    card.shown = true;
     player.madeDemand = true;
     var bridge = this.hasAbilityToUse('Bridge', player);
     var colosseum = this.hasAbilityToUse('Colosseum', player);
@@ -744,14 +746,6 @@ var actions = {
       if (
           action
       &&  action.usedRegularArchitect)
-      {
-        return false;
-      }
-
-      if (
-          action
-      &&  action.usedFountain
-      && !data.card.selected)
       {
         return false;
       }
@@ -966,13 +960,6 @@ var actions = {
 
     if (this.canAddToStructure(structure, player, data.card.color, game, action)) {
 
-      if (
-          action
-      &&  action.usedFountain
-      && !data.card.selected)
-      {
-        return false;
-      }
       data.card.selected = false;
 
       structure.materials.push(data.card.color);
@@ -1061,7 +1048,8 @@ var actions = {
       &&  game.deck.length
       && !action.takenFromStockpile)
       {
-        player.vault.push({visibility: 'none', color: this.buildingColors[game.deck.pop()]});
+        var name = game.deck.pop();
+        player.vault.push({visibility: 'none', color: this.buildingColors[name], name: name});
         if (game.deck.length == 0) game.finished = true;
         action.takenFromStockpile = true;
         return (!basilica || !!action.takenFromHand) ? this.skip(move, game, player) : game;
@@ -1084,7 +1072,7 @@ var actions = {
       && !action.takenFromHand
       &&  basilica)
       {
-        player.vault.push({visibility: 'owner', color: data.card.color});
+        player.vault.push({visibility: 'owner', color: data.card.color, name: data.card.name});
         player.hand.splice(data.index, 1);
         action.takenFromHand = true;
         return !!action.takenFromStockpile ? this.skip(move, game, player) : game;
@@ -1227,8 +1215,76 @@ var actions = {
     }
 
     return game;
-  }
+  },
 
+  unseenCards: function(state) {
+    // get the names of the cards which have not been seen by the current player
+    // cards in opponents hand that are not public
+    // cards in opponents vaults that are not public
+    // cards in own vault from atrium
+    // cards in deck
+
+    var unseen = [];
+    state.players.forEach(function(player) {
+      // if opponent
+      if (player !== state.players[state.currentPlayer]) {
+        player.hand.forEach(function(card) {
+          if (!card.shown && card.name !== 'Jack') unseen.push(card.name);
+        });
+        player.vault.forEach(function(item) {
+          if (item.visibility !== 'public') unseen.push(item.name);
+        });
+      } else {
+        player.vault.forEach(function(item) {
+          if (item.visibility === 'none') unseen.push(item.name);
+        });
+      }
+    });
+    return unseen.concat(state.deck);
+  },
+
+  determinise: function(state) {
+    // shuffle the unseen cards and place in possible locations
+    var unseen = this.shuffle(this.unseenCards(state));
+
+    // cards in opponents hand that are not public
+    // cards in opponents vaults that are not public
+    // cards in own vault from atrium
+    // cards in deck
+    state.players.forEach(function(player) {
+      // if opponent
+      if (player !== state.players[state.currentPlayer]) {
+        player.hand.forEach(function(card) {
+          if (!card.shown && card.name !== 'Jack') {
+            var name = unseen.pop();
+            card.name = name;
+            card.color = this.buildingColors[name];
+          }
+        }, this);
+        player.vault.forEach(function(item) {
+          if (item.visibility !== 'public') {
+            var name = unseen.pop();
+            item.name = name;
+            item.color = this.buildingColors[name];
+          }
+        }, this);
+      } else {
+        player.vault.forEach(function(item) {
+          if (item.visibility === 'none') {
+            var name = unseen.pop();
+            item.name = name;
+            item.color = this.buildingColors[name];
+          }
+        }, this);
+      }
+    }, this);
+
+    console.log('determinised');
+    console.log(state.deck.length === unseen.length);
+    state.deck = unseen;
+
+    return state;
+  }
   
 };
 

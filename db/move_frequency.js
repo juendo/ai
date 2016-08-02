@@ -17,11 +17,13 @@ var findDocuments = function(game, db, callback) {
 module.exports = function(game, callback) {
   // Use connect method to connect to the server
   MongoClient.connect(url, function(err, db) {
-    assert.equal(null, err);
-
-    findDocuments(game, db, function(docs) {
+    if (err) {
+      console.log(err);
+    } else {
+      findDocuments(game, db, function(docs) {
         db.close();
         callback(docs);
-    });
+      });
+    }
   });
 }

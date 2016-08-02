@@ -11,6 +11,7 @@ class Game {
 		var rules = require('../public/games/' + state.gameName + '/rules');
     	this.actions = rules.actions;
 		this.legal = require('../public/games/' + state.gameName + '/legal');
+		this.moves = require('../public/games/' + state.gameName + '/moves');
 	}
 
 	isTerminal(state) {
@@ -39,6 +40,14 @@ class Game {
 
 	clone(state) {
 		return clone(state);
+	}
+
+	determinise(state) {
+		return this.actions.determinise(clone(state));
+	}
+
+	translateMove(move, state) {
+		return this.moves(move, state);
 	}
 }
 

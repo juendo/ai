@@ -37,20 +37,20 @@ var actions = {
     return winner;
   },
 
+  shuffle: function(array) {
+    var m = array.length, t, i;
+    while (m) {
+      i = Math.floor(Math.random() * m--);
+      t = array[m];
+      array[m] = array[i];
+      array[i] = t;
+    }
+    return array;
+  },
+
   start: function(game) {
 
     if (game.players.length < 3) return false;
-
-    var shuffle = function(array) {
-      var m = array.length, t, i;
-      while (m) {
-        i = Math.floor(Math.random() * m--);
-        t = array[m];
-        array[m] = array[i];
-        array[i] = t;
-      }
-      return array;
-    }
 
     for (var i = 3; i <= 35; i++) {
        game.deck.push(i);
@@ -116,7 +116,25 @@ var actions = {
       return game;
     } 
     else return false; 
-    
+  },
+
+  determinise: function(state) {
+    var seen = [];
+    for (var i = 3; i <= 35; i++) {
+       seen.push(false);
+    }
+    state.players.forEach(function(player) {
+      player.cards.forEach(function(card) {
+        cards[card - 3] = true;
+      });
+    });
+    var unseen = [];
+    for (var i = 3; i <= 35; i++) {
+      if (!seen[i - 3]) unseen.push(i);
+    }
+    state.deck = this.shuffle(unseen).splice(0, state.deck.length);
+
+    return state;
   }
 };
 

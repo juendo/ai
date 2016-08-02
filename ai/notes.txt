@@ -1,0 +1,40 @@
+ For example consider a game where a coin is flipped but kept hidden
+and the player is offered the choice between a payment of 0.9 or a payment of
+1 if the player can correctly guess the face up side of the coin and 0 otherwise.
+The payment of 0.9 is the best, since the player has has an expected reward of
+0.5 when guessing the face up side of the coin. However if PIMC is applied to
+this game, in each determinization it is known which way up the coin is and the
+guess the coin option always has a reward of 1.
+
+For example, if a player could have played a winning card
+on their previous turn and is playing rationally, the player does not hold the
+winning card otherwise the game would be over. However PIMC would include
+determinizations in which that player held that card, which is in fact incompatible
+with the assumption of rationality (which asserts that players do not choose
+actions that offer strictly lower utility than other actions).
+
+It can be concluded that in order to apply PIMC search with MCTS, it is
+always necessary to find the correct balance of simulations and determinizations
+since the best balance was different for both Dou Di Zhu and LOTR:C. More
+determinizations allows for a more diverse sample of possible states, but allows
+for less time to analyse each state given a fixed computational budget.
+
+The nodes in an ISMCTS tree represent unique histories from the point of
+view of the root player. This means that nodes are distinguished only by the
+observation the root player makes of the actions which lead to the node, so that
+some nodes may correspond to many different information sets in the game
+which are indistinguishable to the root player (but appear distinct to another
+player)
+
+.player-title
+.player-clientele
+#bottom-bar
+
+
+export STORMPATH_CLIENT_APIKEY_ID=1LIRCUMDC8JX4PB8NIEC0U6FE
+export STORMPATH_CLIENT_APIKEY_SECRET=upYYGooGi+qfVSZ8Cs5nXeVVR9OdY/45CRgLvV3lMNo
+export STORMPATH_APPLICATION_HREF=https://api.stormpath.com/v1/applications/QlioHhRCh5eXnPArupHzS
+
+track the number of moves, the average quality of those moves
+
+Second game to implement should have hidden information at its core - skull?
