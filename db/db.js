@@ -2,7 +2,13 @@ var MongoClient = require('mongodb').MongoClient
   , assert = require('assert');
 
 // Connection URL
-var url = require('./password');
+if (process.env.DB_PASS) {
+  console.log('db password set');
+  var url = process.env.DB_PASS
+} else {
+  console.log('db password not set');
+  var url = require('./password');
+}
 
 var queries = require('./queries');
 

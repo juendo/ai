@@ -1,6 +1,5 @@
 module.exports = function(data) {
 
-  console.log(data);
 
   var moves = data.moves;
   var winner = data.winner;
@@ -15,8 +14,13 @@ module.exports = function(data) {
     assert = require('assert');
 
   // Connection URL
-  var url = require('./password');
-
+  if (process.env.DB_PASS) {
+    var url = process.env.DB_PASS
+  } else {
+    console.log('db password not set');
+    var url = require('./password');
+  }
+  
   var saveMoves = function(db, callback) {
 
     var store = db.collection(state.gameName);
