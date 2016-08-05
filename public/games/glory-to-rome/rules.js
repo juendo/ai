@@ -310,14 +310,10 @@ var actions = {
     if (!belongsToPlayer && (!stairway || !structure.done || (action && action.usedStairway))) return false;
     if (belongsToPlayer && (action && action.usedRegularArchitect)) return false;
 
-    var scriptorium = this.hasAbilityToUse('Scriptorium', player);
-    var road = this.hasAbilityToUse('Road', player);
-    var tower = this.hasAbilityToUse('Tower', player);
-
     var canAdd = (structure.siteColor === color 
-                || scriptorium && color === 'purple'
-                || road && structure.siteColor === 'blue'
-                || tower && color === 'yellow');
+                || this.hasAbilityToUse('Scriptorium', player) && color === 'purple'
+                || this.hasAbilityToUse('Road', player) && structure.siteColor === 'blue'
+                || this.hasAbilityToUse('Tower', player) && color === 'yellow');
 
     if (stairway && !belongsToPlayer) {
 
@@ -358,10 +354,9 @@ var actions = {
   },
 
   checkIfComplete: function(structure, player, game, actionType) {
-    scriptorium = this.hasAbilityToUse('Scriptorium', player);
     if (!structure.done 
         && (structure.materials.length >= this.colorValues[structure.siteColor] 
-          || (scriptorium && structure.materials[structure.materials.length - 1] == 'purple')
+          || (this.hasAbilityToUse('Scriptorium', player) && structure.materials[structure.materials.length - 1] == 'purple')
           || (structure.name == 'Villa' && actionType == 'Architect'))) {
       structure.done = true;
       if (structure.name == 'Amphitheatre') {
@@ -398,14 +393,13 @@ var actions = {
   },
 
   addClientActions: function(player, color) {
-    var storeroom = this.hasAbilityToUse('Storeroom', player);
-    var ludusMagnus = this.hasAbilityToUse('LudusMagnus', player);
+
     player.clientele.forEach(function(client) {
       if (this.roles[color] == client) {
         player.actions.push({kind: client, description: client.toUpperCase()});
-      } else if (storeroom && color == 'yellow') {
+      } else if (this.hasAbilityToUse('Storeroom', player) && color == 'yellow') {
         player.actions.push({kind: 'Laborer', description: 'LABORER'});
-      } else if (ludusMagnus && client == 'Merchant') {
+      } else if (this.hasAbilityToUse('LudusMagnus', player) && client == 'Merchant') {
         player.actions.push({kind: this.roles[color], description: this.roles[color].toUpperCase()})
       }
     }, this);
@@ -657,7 +651,7 @@ var actions = {
     // find the index of the single selected card the player has
     var card = player.hand[index];
 
-    if (card.color != color && card.name != 'Statue') {
+    if (card.color !== color && card.name !== 'Statue') {
       return false;
     }
 
@@ -694,7 +688,11 @@ var actions = {
 
     for (var i = 0; i < game.players.length; i++) {
       if (i != game.currentPlayer) {
-        game.players[i].actions.push({kind:'Follow', description:'THINK or FOLLOW', color: color})
+        game.players[i].actions.push({
+          kind:'Follow',
+          description:'THINK or FOLLOW',
+          color: color
+        })
         this.addClientActions(game.players[i], color);
       }
     }
@@ -738,10 +736,9 @@ var actions = {
   },
 
   layFoundation: function(player, game, data, action, move) {
-    var tower = this.hasAbilityToUse('Tower', player);
     if (
         6 - game.sites[data.color] < game.players.length
-    || (game.sites[data.color] > 0 && ((player.actions[1] && player.actions[1].kind == action.kind) || tower))) 
+    || (game.sites[data.color] > 0 && ((player.actions[1] && player.actions[1].kind == action.kind) || this.hasAbilityToUse('Tower', player)))) 
     {
       if (
           action
@@ -757,7 +754,9 @@ var actions = {
           different = false;
         }
       }, this);
-      if (different == false) { return false };
+      if (different == false) {
+        return false 
+      };
       data.card.selected = false;
 
       this.addThinkIfPlayerHasAcademy(player, action);
@@ -766,7 +765,7 @@ var actions = {
 
       // if using an in town site
       if (
-         (6 - game.sites[data.color] < game.players.length || tower))
+         (6 - game.sites[data.color] < game.players.length || this.hasAbilityToUse('Tower', player)))
       {
         data.card.siteColor = data.color;
         player.buildings.push(data.card);
@@ -834,9 +833,6 @@ var actions = {
   patron: function(move, game, player) {
     if (player.clientele.length < this.clienteleLimit(player)) {
 
-      var bath = this.hasAbilityToUse('Bath', player);
-      var aqueduct = this.hasAbilityToUse('Aqueduct', player);
-      var bar = this.hasAbilityToUse('Bar', player);
       var action = player.actions[0];
       var pool = game.pool;
       var color = move.color;
@@ -848,13 +844,13 @@ var actions = {
         player.clientele.push(this.roles[color]);
         pool[color]--;
         action.takenFromPool = true;
-        if (bath) {
+        if (this.hasAbilityToUse('Bath', player)) {
           action.involvesBath = true;
           if (action.takenFromHand && action.takenFromDeck) player.actions.shift();
           player.actions.splice(0, 0, {kind: this.roles[color], description: this.roles[color].toUpperCase()});
           return game;
         }
-        return ((!bar || !!action.takenFromDeck) && (!aqueduct || !!action.takenFromHand)) ? this.skip(move, game, player) : game;
+        return ((!this.hasAbilityToUse('Bar', player) || !!action.takenFromDeck) && (!this.hasAbilityToUse('Aqueduct', player) || !!action.takenFromHand)) ? this.skip(move, game, player) : game;
       }
     }
     return false;
@@ -863,27 +859,24 @@ var actions = {
   bar: function(move, game, player) {
     if (player.clientele.length < this.clienteleLimit(player)) {
 
-      var bath = this.hasAbilityToUse('Bath', player);
-      var aqueduct = this.hasAbilityToUse('Aqueduct', player);
-      var bar = this.hasAbilityToUse('Bar', player);
       var action = player.actions[0];
 
       if (
           game.deck.length
       && !action.takenFromDeck
-      &&  bar)
+      &&  this.hasAbilityToUse('Bar', player))
       {
         var col = this.buildingColors[game.deck.pop()];
         player.clientele.push(this.roles[col]);
         if (game.deck.length === 0) game.finished = true;
         action.takenFromDeck = true;
-        if (bath) {
+        if (this.hasAbilityToUse('Bath', player)) {
           action.involvesBath = true;
           if (action.takenFromPool && action.takenFromHand) player.actions.shift();
           player.actions.splice(0, 0, {kind: this.roles[col], description: this.roles[col].toUpperCase()});
           return game;
         }
-        return (!!action.takenFromPool && (!aqueduct || !!action.takenFromHand)) ? this.skip(move, game, player) : game;
+        return (!!action.takenFromPool && (!this.hasAbilityToUse('Aqueduct', player) || !!action.takenFromHand)) ? this.skip(move, game, player) : game;
       }
     }
     return false;
@@ -892,28 +885,24 @@ var actions = {
   aqueduct: function(move, game, player) {
     if (player.clientele.length < this.clienteleLimit(player)) {
 
-      var bath = this.hasAbilityToUse('Bath', player);
-      var aqueduct = this.hasAbilityToUse('Aqueduct', player);
-      var bar = this.hasAbilityToUse('Bar', player);
       var action = player.actions[0];
-
       var data = move.data;
 
       if (
           data.card.name !== 'Jack'
       && !action.takenFromHand
-      &&  aqueduct) 
+      &&  this.hasAbilityToUse('Aqueduct', player)) 
       {
         player.clientele.push(this.roles[data.card.color]);
         player.hand.splice(data.index, 1);
         action.takenFromHand = true;
-        if (bath) {
+        if (this.hasAbilityToUse('Bath', player)) {
           action.involvesBath = true;
           if (action.takenFromPool && action.takenFromDeck) player.actions.shift();
           player.actions.splice(0, 0, {kind: this.roles[data.card.color], description: this.roles[data.card.color].toUpperCase()});
           return game;
         }
-        return (!!action.takenFromPool && (!bar || !!action.takenFromDeck)) ? this.skip(move, game, player) : game;
+        return (!!action.takenFromPool && (!this.hasAbilityToUse('Bar', player) || !!action.takenFromDeck)) ? this.skip(move, game, player) : game;
       }
     }
     return false;
@@ -922,7 +911,6 @@ var actions = {
   laborer: function(move, game, player) {
     var action = player.actions[0];
     var color = move.color;
-    var dock = this.hasAbilityToUse('Dock', player);
     if (
         game.pool[color]
     && !action.takenFromPool)
@@ -930,20 +918,19 @@ var actions = {
       player.stockpile.push(color);
       game.pool[color]--;
       action.takenFromPool = true;
-      return (!dock || !!action.takenFromHand) ? this.skip(move, game, player) : game;
+      return (!this.hasAbilityToUse('Dock', player) || !!action.takenFromHand) ? this.skip(move, game, player) : game;
     }
     return false;
   },
 
   dock: function(move, game, player) {
-    var dock = this.hasAbilityToUse('Dock', player);
     var data = move.data;
     var action = player.actions[0];
 
     if (
         data.card.name !== 'Jack'
     && !action.takenFromHand
-    &&  dock) 
+    &&  this.hasAbilityToUse('Dock', player)) 
     {
       player.stockpile.push(data.card.color);
       player.hand.splice(data.index, 1);
@@ -1083,7 +1070,7 @@ var actions = {
 
   prison: function(move, game, player) {
     var building = move.building;
-    var opponent = move.opponent;
+    var opponent = game.players[move.opponent];
     var index = move.index;
     // check if player has already layed that building
     var different = true;
@@ -1115,7 +1102,13 @@ var actions = {
     {
       action.usedFountain = true;
       var name = game.deck.pop();
-      player.hand.push({name: name, done: false, materials: [], selected: true, color: this.buildingColors[name]});
+      player.hand.push({
+        name: name,
+        done: false,
+        materials: [],
+        selected: true,
+        color: this.buildingColors[name]
+      });
       if (game.deck.length <= 0) game.finished = true;
       return game;
     }
@@ -1279,8 +1272,6 @@ var actions = {
       }
     }, this);
 
-    console.log('determinised');
-    console.log(state.deck.length === unseen.length);
     state.deck = unseen;
 
     return state;

@@ -2,6 +2,7 @@
 
 var Node = require("tree-node");
 var deepEqual = require('deep-equal');
+var Frequency = require('./Frequency');
 
 var rand = function(min, max) {
     return Math.random() * (max - min) + min;
@@ -39,38 +40,20 @@ class ISMCTS {
 		// docs have a move, a number of wins and a number of plays
 		// should be split by number of players
 		this.game = game;
-		this.docs = {};
+		this.db = 20;
 		this.pols = {};
 
-		// how many players are in current game?
-		var playerCount = this.game.getState().players.length;
-
-		docs.forEach(function(doc) {
-			// track the win ratio and the total players at each step
-			if (typeof this.docs[JSON.stringify(doc['_id']['move'])] === 'undefined') {
-				this.docs[JSON.stringify(doc['_id']['move'])] = { total: doc['total'], ratio: Math.pow(doc['winning'] / doc['total'], Math.log(playerCount, doc['_id']['players'])) };
-			} else {
-				var record = this.docs[JSON.stringify(doc['_id']['move'])];
-				record.ratio = (record.total * record.ratio + Math.pow(doc['winning'] / doc['total'], Math.log(playerCount, doc['_id']['players'])) * doc['total']) / (doc['total'] + record.total);
-				record.total = doc['total'] + record.total;
-			}
-			
-		}, this);
-
-		pols.forEach(function(pol) {
-			this.pols[JSON.stringify(pol['_id'])] = pol['total'];
-		}, this);
+		this.frequency = new Frequency(docs, this.db, this.game.getState().players.length);
+		this.policies = new Policies(pols, docs);
 
 		this.translate = require('../public/games/' + game.getState().gameName + '/moves');
 		this.c = 0.7;
-		this.db = 20;
 	}
 
 	getMove(state, n) {
 
 		// create game tree
 		var root = new Node();
-		root.data('infSet', []);
 
 		while (n--) {
 			// choose a determinisation from the root's information set
@@ -110,18 +93,19 @@ class ISMCTS {
 
 		var child = new Node();
 
-		var doc = this.docs[JSON.stringify(this.translate(move, node.data('determinisation')))];
-		var wins = doc ? doc.ratio * this.db : this.db / node.data('determinisation').players.length;
+		var wins = this.frequency.wins(this.translate(move, node.data('determinisation')));
 
 		child.data({
-			infSet: node.data('infSet').concat([this.game.translateMove(move, node.data('determinisation'))]),
+			action: this.game.translateMove(move, node.data('determinisation')),
 			determinisation: this.game.applyMove(move, this.game.clone(node.data('determinisation'))),
 			move: move,
 			wins: wins,
 			plays: this.db,
 			availability: 0
 		});
+
 		node.appendChild(child);
+		
 		return child;
 	}
 
@@ -162,7 +146,7 @@ class ISMCTS {
 			
 			// apply move
 			state = this.game.applyMove(move, state);
-			if (!state) console.log(move);
+			//if (!state) console.log(move);
 		}
 
 		return this.game.winner(state);
@@ -188,8 +172,7 @@ class ISMCTS {
 
 			node._parent.childIds.forEach(function(id) {
 				var sibling = node._parent.getNode(id);
-				var infSet = sibling.data('infSet');
-				if (legal[JSON.stringify(infSet[infSet.length - 1])]) sibling.data('availability', sibling.data('availability') + 1);
+				if (legal[JSON.stringify(sibling.data('action'))]) sibling.data('availability', sibling.data('availability') + 1);
 			}, this);
 
 			node = node._parent;
@@ -205,8 +188,7 @@ class ISMCTS {
 		}, this);
 		// get the compatible child nodes
 		var compatible = node.childIds.filter(function(id) {
-			var infSet = node.getNode(id).data('infSet');
-			return legal[JSON.stringify(infSet[infSet.length - 1])];
+			return legal[JSON.stringify(node.getNode(id).data('action'))];
 		});
 
 		// apply selection algorithm
@@ -227,8 +209,7 @@ class ISMCTS {
 			return (prev.v > current.v) ? prev : current;
 		}).node;
 
-		var infSet = optimal.data('infSet');
-		optimal.data('determinisation', this.game.applyMove(legal[JSON.stringify(infSet[infSet.length - 1])], this.game.clone(node.data('determinisation'))));
+		optimal.data('determinisation', this.game.applyMove(legal[JSON.stringify(optimal.data('action'))], this.game.clone(node.data('determinisation'))));
 
 		return optimal;
 	}
@@ -240,8 +221,7 @@ class ISMCTS {
 
 		// get the moves for the child nodes
 		var checked = node.childIds.map(function(id) {
-			var infSet = node.getNode(id).data('infSet');
-			return infSet[infSet.length - 1];
+			return node.getNode(id).data('action');
 		});
 
 		// find out which legal moves do not already have child nodes

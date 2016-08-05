@@ -408,7 +408,7 @@ class LegalMoves {
             }
           }, this);
           if (this.game.players[k].buildings[j].done && doesntHave) {
-            moves.push({kind: 'prison', building: this.game.players[k].buildings[j], opponent: this.game.players[k], index: j});
+            moves.push({kind: 'prison', building: this.game.players[k].buildings[j], opponent: k, index: j});
           }
         }
       }

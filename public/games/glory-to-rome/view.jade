@@ -49,7 +49,7 @@ block player
       ng-drop-success='(yourTurn() && ($parent.$parent.$index === meta.you || actions.hasAbilityToUse("Stairway", you()))) ? dragEnded(you().actions[0].kind, $data, game, $index, $parent.$parent.$index) : null',
       ng-src='games/glory-to-rome/images/cards/{{ building.name }}.png',
       ng-alt='{{ building.name }}',
-      ng-click='yourTurn() && buildingClicked(you().actions[0].kind, building, $parent.$parent.$index == meta.you, player, $index, game)',
+      ng-click='yourTurn() && buildingClicked(you().actions[0].kind, building, $parent.$parent.$index ==== meta.you, $parent.$parent.$index, $index, game)',
       ng-style='{ "border-color" : "#" + (player.actions[0] ? actionBorderColors[player.actions[0].kind] : "000") }',
       ng-class='{ "is-relevant" : $parent.$parent.$index == game.currentPlayer && actions.hasAbilityToUse(building.name, player) && player.actions[0] && relevantAction(building.name, player.actions[0]) }'
     )

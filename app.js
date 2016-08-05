@@ -53,7 +53,8 @@ app.use(stormpath.init(app, {
   web: {
     login: {
       enabled: true,
-      nextUri: '/'
+      nextUri: '/',
+      view: path.join(__dirname,'views','login.jade')
     },
     logout: {
       enabled: true,

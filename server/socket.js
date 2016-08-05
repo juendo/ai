@@ -19,7 +19,7 @@ module.exports = function (nsp) {
         var state = data.ai;
         data.game = undefined;
         var createGame = require('../ai/game');
-        var ai = require('../ai/ismcts');
+        var ai = require('../ai/moismcts');
         var actions = require('../public/games/' + state.gameName + '/rules').actions;
 
         var game = createGame(state);

@@ -38,3 +38,4 @@ export STORMPATH_APPLICATION_HREF=https://api.stormpath.com/v1/applications/Qlio
 track the number of moves, the average quality of those moves
 
 Second game to implement should have hidden information at its core - skull?
+
