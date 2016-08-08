@@ -512,19 +512,3 @@ img.hand.drag-over {
     background-color: transparent;
     text-align: right;
 }
-.draw-one {
-    position: absolute;
-    left: 82.5%;
-    bottom: 4%;
-    border-radius: 10%;
-    outline: none;
-    width: 5%;
-    font-size: 12px;
-    border: none;
-    background-color: white;
-    color: #222;
-    opacity: 0.5;
-}
-.draw-one:hover {
-    opacity: 1;
-}

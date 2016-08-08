@@ -1,45 +1,45 @@
 var state = {
-      gameName: 'glory-to-rome',
-      iterations: 250,
-      players: [
-        {
-          name: "",
-          buildings: [],
-          hand: [],
-          stockpile: [],
-          clientele: [],
-          vault: [],
-          // a list of the actions the player has yet to use this turn
-          actions: [],
-          // the cards the player used to lead or follow
-          pending: [],
-          publicBuildings: []
-        }
-      ],
-      pool: {
-        'yellow': 0,
-        'green': 0,
-        'red': 0,
-        'grey': 0,
-        'purple': 0,
-        'blue': 0,
-        // the number of jacks available
-        'black': 6
-      },
-      deck: [],
-      sites: {
-          'yellow': 6,
-          'green': 6,
-          'red': 6,
-          'grey': 6,
-          'purple': 6,
-          'blue': 6
-      },
-      leader: 0,
-      turn: 0,
-      currentPlayer: 0,
-      max: 5
-    };
+  gameName: 'glory-to-rome',
+  iterations: 250,
+  players: [
+    {
+      name: "",
+      buildings: [],
+      hand: [],
+      stockpile: [],
+      clientele: [],
+      vault: [],
+      // a list of the actions the player has yet to use this turn
+      actions: [],
+      // the cards the player used to lead or follow
+      pending: [],
+      publicBuildings: []
+    }
+  ],
+  pool: {
+    'yellow': 0,
+    'green': 0,
+    'red': 0,
+    'grey': 0,
+    'purple': 0,
+    'blue': 0,
+    // the number of jacks available
+    'black': 6
+  },
+  deck: [],
+  sites: {
+      'yellow': 6,
+      'green': 6,
+      'red': 6,
+      'grey': 6,
+      'purple': 6,
+      'blue': 6
+  },
+  leader: 0,
+  turn: 0,
+  currentPlayer: 0,
+  max: 5
+};
 
 var actions = {
 
@@ -157,7 +157,7 @@ var actions = {
         var name = game.deck.pop();
         game.players[i].hand.push({name: name, done: false, materials: [], selected: false, color: this.buildingColors[name]});
       }
-      game.players[i].hand.push({name: 'Jack', color: 'black'});
+      game.players[i].hand.push({name: 'Jack', color: 'black', selected: false});
       game.pool['black']--;
     }
     game.leader = Math.floor(Math.random() * (game.players.length));

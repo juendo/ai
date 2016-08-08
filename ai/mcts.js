@@ -2,29 +2,8 @@
 
 var Node = require('tree-node');
 var deepEqual = require('deep-equal');
-
-var rand = function(min, max) {
-    return Math.random() * (max - min) + min;
-};
- 
-var getRandomItem = function(list, weight) {
-    var total_weight = weight.reduce(function (prev, cur, i, arr) {
-        return prev + cur;
-    });
-     
-    var random_num = rand(0, total_weight);
-    var weight_sum = 0;
-    //console.log(random_num)
-     
-    for (var i = 0; i < list.length; i++) {
-        weight_sum += weight[i];
-        weight_sum = +weight_sum.toFixed(2);
-         
-        if (random_num <= weight_sum) {
-            return list[i];
-        }
-    }
-};
+var Frequency = require('./Frequency');
+var Policies = require('./Policies');
 
 Math.log = (function() {
   var log = Math.log;
@@ -38,35 +17,16 @@ Math.log = (function() {
 // class implementing basic Monte Carlo Tree Search
 class MCTS {
 
-	constructor(game, docs, pols) {
+	constructor(game, docs, pols, settings) {
 		// docs have a move, a number of wins and a number of plays
 		// should be split by number of players
 		this.game = game;
-		this.docs = {};
-		this.pols = {};
+		this.db = settings.db;
+		this.c = settings.c;
 
-		// how many players are in current game?
-		var playerCount = this.game.getState().players.length;
-
-		docs.forEach(function(doc) {
-			// track the win ratio and the total players at each step
-			if (typeof this.docs[JSON.stringify(doc['_id']['move'])] === 'undefined') {
-				this.docs[JSON.stringify(doc['_id']['move'])] = { total: doc['total'], ratio: Math.pow(doc['winning'] / doc['total'], Math.log(playerCount, doc['_id']['players'])) };
-			} else {
-				var record = this.docs[JSON.stringify(doc['_id']['move'])];
-				record.ratio = (record.total * record.ratio + Math.pow(doc['winning'] / doc['total'], Math.log(playerCount, doc['_id']['players'])) * doc['total']) / (doc['total'] + record.total);
-				record.total = doc['total'] + record.total;
-			}
-			
-		}, this);
-
-		pols.forEach(function(pol) {
-			this.pols[JSON.stringify(pol['_id'])] = pol['total'];
-		}, this);
-
+		this.frequency = new Frequency(docs, this.db, this.game.getState().players.length);
+		this.policies = new Policies(pols);
 		this.translate = require('../public/games/' + game.getState().gameName + '/moves');
-		this.c = 0.7;
-		this.db = 20;
 	}
 
 	getMove(state, n) {
@@ -101,7 +61,7 @@ class MCTS {
 		return root.childIds.map(function(id) {
 			var child = root.getNode(id);
 			child.data('winRatio', child.data('wins') / child.data('plays'));
-			console.log({move: child.data('move'), winRatio: child.data('winRatio')});
+			//console.log({move: child.data('move'), winRatio: child.data('winRatio')});
 			return child;
 		}).reduce(function(prev, current) {
 			return prev.data('winRatio') > current.data('winRatio') ? prev : current;
@@ -128,8 +88,7 @@ class MCTS {
 		// add new node
 		var child = new Node();
 
-		var doc = this.docs[JSON.stringify(this.translate(move, node.data('state')))];
-		var wins = doc ? doc.ratio * this.db : this.db / node.data('state').players.length;
+		var wins = this.frequency.wins(this.translate(move, node.data('state')));
 
 		child.data({
 			move: move,
@@ -149,37 +108,18 @@ class MCTS {
 			var legal = this.game.legalMoves(state);
 			//var move = legal[Math.floor(Math.random() * legal.length)];
 
-			var move;
 			var name = state.players[state.currentPlayer].name;
 
 			if (name === 'AI') {
-				/*move = getRandomItem(legal, legal.map(function(m) {
-					var wr = this.docs[JSON.stringify(this.translate(m, state))];
-					return wr ? wr.ratio : 1 / state.players.length;
-				}, this));*/
-				move = getRandomItem(legal, legal.map(function(m) {
-					var plays = this.pols[{move: JSON.stringify(this.translate(m, state)), player: 'Hendo'}];
-					return plays ? plays : 0;
-				}, this));
 
-				move = move ? move : legal[Math.floor(Math.random() * legal.length)];
+				var move = this.frequency.choose(legal, this.translate, state);
+
 			} else {
-				/*
-				move = getRandomItem(legal, legal.map(function(m) {
-					var plays = this.pols[{move: JSON.stringify(this.translate(m, state)), player: name}];
-					return plays ? plays : 0;
-				}, this));*/
-				move = getRandomItem(legal, legal.map(function(m) {
-					var wr = this.docs[JSON.stringify(this.translate(m, state))];
-					return wr ? wr.ratio : 1 / state.players.length;
-				}, this));
-
-				move = move ? move : legal[Math.floor(Math.random() * legal.length)];
+				var move = this.policies.choose(legal, this.translate, state, name);
 			}
-			
+						
 			// apply move
 			state = this.game.applyMove(move, state);
-			if (!state) console.log(move);
 		}
 
 		return this.game.winner(state);
@@ -246,6 +186,10 @@ class MCTS {
 			return (prev.v > current.v) ? prev : current;
 		}).node;
 	}
+}
+
+module.exports.testMove = function(game, n, settings) {
+	return (new MCTS(game, [], [], settings)).getMove(game.getState(), n);
 }
 
 module.exports.getMove = function(game, n, callback) {

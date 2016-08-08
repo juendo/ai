@@ -1,0 +1,27 @@
+doctype html
+html
+  include ./head.jade
+  body(
+    style='background-color:green'
+  )
+    .container
+      .row(
+        ng-if='game.created'
+      )
+        .Absolute-Center.is-Responsive
+          .col-sm-12.col-md-10.col-md-offset-1
+            .box.row
+              div(class='email-password-area col-xs-12 large col-sm-12')
+                if errors
+                  .alert.alert-danger(style='padding:5px')
+                    each error in errors
+                      p #{error.message}
+
+                form.registration-form.form-horizontal.sp-form(method='post', role='form')
+                  each field in formModel.fields
+                    div(form-group='true', class='form-group group-#{field.name}')
+                      .col-sm-12
+                        - var value = form ? form[field.name] : '';
+                        input.form-control(placeholder=field.placeholder, name=field.name, value=value, required=field.required, type=field.type)
+
+                  button.col-sm-12.btn.btn-register.btn-sp-green(type='submit') Create Account

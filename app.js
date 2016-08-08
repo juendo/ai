@@ -78,13 +78,20 @@ app.use(stormpath.init(app, {
           username: {
             enabled: true,
             label: 'Username',
-            placeholder: 'E.g. Delargsson, binman',
+            placeholder: 'Username',
             required: true,
             type: 'text'
+          },
+          email: {
+            placeholder: 'Email'
+          },
+          password: {
+            placeholder: 'Password'
           }
         },
-        fieldOrder: [ 'username', 'email', 'password' ]
-      }
+        fieldOrder: [ 'username', 'email', 'password' ],
+      },
+      view: path.join(__dirname,'views','register.jade')
     }
   }
 }));
@@ -93,24 +100,17 @@ app.use(stormpath.init(app, {
  * Routes
  */
 
+var games = require('./games.js');
+
 app.get('/', stormpath.getUser, function(req, res) {
   res.render('views/main', {
-    games: [
-      {
-        link: 'no-thanks',
-        name: 'No Thanks',
-        description: 'No Thanks! is a card game designed to be as simple as it is engaging. The rules are simple. Each turn, players have two options: play one of their chips to avoid picking up the current face-up card, or pick up the face-up card (along with any chips that have already been played on that card) and turn over the next card. However, the choices aren\'t so easy as players compete to have the lowest score at the end of the game.',
-        color: '#ca0'
-      },
-      {
-        link: 'glory-to-rome',
-        name: 'Glory to Rome',
-        description: 'In 64 A.D., a great fire originating from the slums of Rome quickly spreads to destroy much of the city, including the imperial palace. Upon hearing news of the fire, Emperor Nero Caesar races back to Rome from his private estate in Antium and sets up shelters for the displaced population. Reporting directly to Nero, you are responsible for rebuilding the structures lost in the fire and restoring Glory to Rome.',
-        color: '#222'
-      }
-    ],
+    games: games,
     user: req.user
   });
+});
+
+app.get('/favicon.ico', function(req, res) {
+  
 });
 
 // serve index and view partials
@@ -118,34 +118,17 @@ app.get('/:game', stormpath.loginRequired, function(req, res) {
 
     // render template and store the result in html variable
     res.render('public/games/' + req.params.game + '/view', {
-        color: {
-          'glory-to-rome': '#222',
-          'no-thanks': '#ca0'
-        }[req.params.game],
-        active: {
-          'glory-to-rome': '#CCC',
-          'no-thanks': '#DDA'
-        }[req.params.game],
-        inactive: {
-          'glory-to-rome': '#333',
-          'no-thanks': '#550'
-        }[req.params.game]
+        color: games[req.params.game].color,
+        active: games[req.params.game].active,
+        inactive: games[req.params.game].inactive
       },
       function(err, html) {
+        console.log(err);
         res.render('views/index', {
             game: req.params.game,
-            color: {
-              'glory-to-rome': '#222',
-              'no-thanks': '#ca0'
-            }[req.params.game],
-            active: {
-              'glory-to-rome': '#CCC',
-              'no-thanks': '#DDA'
-            }[req.params.game],
-            inactive: {
-              'glory-to-rome': '#333',
-              'no-thanks': '#550'
-            }[req.params.game],
+            color: games[req.params.game].color,
+            active: games[req.params.game].active,
+            inactive: games[req.params.game].inactive,
             view: html,
             username: req.user.username
         });
@@ -154,7 +137,7 @@ app.get('/:game', stormpath.loginRequired, function(req, res) {
 });
 
 var socket = require('./server/socket');
-['no-thanks', 'glory-to-rome'].forEach(function(name) {
+Object.keys(games).forEach(function(name) {
   var nsp = io.of('/' + name);
   var socketServer = socket(nsp);
   // Socket.io Communication

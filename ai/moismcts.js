@@ -14,12 +14,12 @@ Math.log = (function() {
  
 class MOISMCTS {
 
-	constructor(game, docs, pols) {
+	constructor(game, docs, pols, settings) {
 		// docs have a move, a number of wins and a number of plays
 		// should be split by number of players
 		this.game = game;
-		this.db = 10;
-		this.c = 0.7;
+		this.db = settings.db;
+		this.c = settings.c;
 
 		this.frequency = new Frequency(docs, this.db, this.game.getState().players.length);
 		this.policies = new Policies(pols);
@@ -58,7 +58,7 @@ class MOISMCTS {
 		return root.childIds.map(function(id) {
 			var child = root.getNode(id);
 			child.data('winRatio', child.data('wins') / child.data('plays'));
-			console.log({move: child.data('move'), winRatio: child.data('winRatio')});
+			//console.log({move: child.data('move'), winRatio: child.data('winRatio')});
 			return child;
 		}).reduce(function(prev, current) {
 			return prev.data('winRatio') > current.data('winRatio') ? prev : current;
@@ -170,8 +170,6 @@ class MOISMCTS {
 				var move = this.policies.choose(legal, this.translate, state, name);
 			}
 
-			move = move ? move : legal[Math.floor(Math.random() * legal.length)];
-			
 			// apply move
 			state = this.game.applyMove(move, state);
 
@@ -275,7 +273,11 @@ class MOISMCTS {
 	}
 }
 
-module.exports.getMove = function(game, n, callback) {
+module.exports.testMove = function(game, n, settings, docs) {
+	return (new MOISMCTS(game, docs, [], settings)).getMove(game.getState(), n);
+}
+
+module.exports.getMove = function(game, n, callback, settings) {
 
 	var freq = require('../db/move_frequency');
 	var user_pol = require('../db/user_policy');
@@ -285,7 +287,7 @@ module.exports.getMove = function(game, n, callback) {
 		user_pol(game.getState().gameName, game.getState().players.map(function(player) {
 			return player.name;
 		}), function(pols) {
-			callback((new MOISMCTS(game, freq, pols)).getMove(game.getState(), n));
+			callback((new MOISMCTS(game, freq, pols, settings)).getMove(game.getState(), n));
 		});
 	});
 }

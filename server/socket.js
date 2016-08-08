@@ -31,6 +31,9 @@ module.exports = function (nsp) {
           socket.emit('change', data);
           data.update = false;
           socket.broadcast.to(data.room).emit('change', data);
+        }, {
+          db: 0,
+          c: 0.875
         }); 
       }
     });

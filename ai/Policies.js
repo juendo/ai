@@ -9,7 +9,9 @@ var getRandomItem = function(list, weight) {
         return prev + cur;
     });
 
-    if (!total_weight) return null;
+    if (!total_weight) {
+        return list[Math.floor(rand(0, list.length))];
+    }
      
     var random_num = rand(0, total_weight);
     var weight_sum = 0;
@@ -46,7 +48,7 @@ Policies.prototype.choose = function(moves, translate, state, player) {
 	return getRandomItem(moves, moves.map(function(move) {
 
 		var plays = this.plays(translate(move, state), player);
-		return plays ? plays : 1 / moves.length;
+		return plays ? plays : 0;
 	}, this));
 }
 

@@ -1,3 +1,12 @@
+.title-box {
+    text-align: center;
+    color: #CCC;
+    margin-top: 10%;
+    font-size: 25px;
+}
+
+
+
 html,
       body {
         height: 100%;

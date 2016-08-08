@@ -9,8 +9,10 @@ var getRandomItem = function(list, weight) {
         return prev + cur;
     });
 
-    if (!total_weight) return null;
-     
+    if (!total_weight) {
+    	return list[Math.floor(rand(0, list.length))];
+    }
+    
     var random_num = rand(0, total_weight);
     var weight_sum = 0;
     ////console.log(random_num)

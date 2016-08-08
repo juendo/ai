@@ -56,7 +56,7 @@ var actions = {
        game.deck.push(i);
     }
 
-    game.deck = shuffle(game.deck).splice(0, 26);
+    game.deck = this.shuffle(game.deck).splice(0, 26);
 
     game.currentCard = {
       chips: 0,

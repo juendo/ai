@@ -3,29 +3,7 @@
 var Node = require("tree-node");
 var deepEqual = require('deep-equal');
 var Frequency = require('./Frequency');
-
-var rand = function(min, max) {
-    return Math.random() * (max - min) + min;
-};
- 
-var getRandomItem = function(list, weight) {
-    var total_weight = weight.reduce(function (prev, cur, i, arr) {
-        return prev + cur;
-    });
-     
-    var random_num = rand(0, total_weight);
-    var weight_sum = 0;
-    //console.log(random_num)
-     
-    for (var i = 0; i < list.length; i++) {
-        weight_sum += weight[i];
-        weight_sum = +weight_sum.toFixed(2);
-         
-        if (random_num <= weight_sum) {
-            return list[i];
-        }
-    }
-};
+var Policies = require('./Policies');
 
 Math.log = (function() {
   var log = Math.log;
@@ -36,18 +14,16 @@ Math.log = (function() {
  
 class ISMCTS {
 
-	constructor(game, docs, pols) {
+	constructor(game, docs, pols, settings) {
 		// docs have a move, a number of wins and a number of plays
 		// should be split by number of players
 		this.game = game;
-		this.db = 20;
-		this.pols = {};
+		this.db = settings.db;
+		this.c = settings.c;
 
 		this.frequency = new Frequency(docs, this.db, this.game.getState().players.length);
-		this.policies = new Policies(pols, docs);
-
+		this.policies = new Policies(pols);
 		this.translate = require('../public/games/' + game.getState().gameName + '/moves');
-		this.c = 0.7;
 	}
 
 	getMove(state, n) {
@@ -72,7 +48,7 @@ class ISMCTS {
 		return root.childIds.map(function(id) {
 			var child = root.getNode(id);
 			child.data('winRatio', child.data('wins') / child.data('plays'));
-			console.log({move: child.data('move'), winRatio: child.data('winRatio')});
+			//console.log({move: child.data('move'), winRatio: child.data('winRatio')});
 			return child;
 		}).reduce(function(prev, current) {
 			return prev.data('winRatio') > current.data('winRatio') ? prev : current;
@@ -116,37 +92,18 @@ class ISMCTS {
 			var legal = this.game.legalMoves(state);
 			//var move = legal[Math.floor(Math.random() * legal.length)];
 
-			var move;
 			var name = state.players[state.currentPlayer].name;
 
 			if (name === 'AI') {
-				/*move = getRandomItem(legal, legal.map(function(m) {
-					var wr = this.docs[JSON.stringify(this.translate(m, state))];
-					return wr ? wr.ratio : 1 / state.players.length;
-				}, this));*/
-				move = getRandomItem(legal, legal.map(function(m) {
-					var plays = this.pols[{move: JSON.stringify(this.translate(m, state)), player: 'Hendo'}];
-					return plays ? plays : 0;
-				}, this));
 
-				move = move ? move : legal[Math.floor(Math.random() * legal.length)];
+				var move = this.frequency.choose(legal, this.translate, state);
+
 			} else {
-				/*
-				move = getRandomItem(legal, legal.map(function(m) {
-					var plays = this.pols[{move: JSON.stringify(this.translate(m, state)), player: name}];
-					return plays ? plays : 0;
-				}, this));*/
-				move = getRandomItem(legal, legal.map(function(m) {
-					var wr = this.docs[JSON.stringify(this.translate(m, state))];
-					return wr ? wr.ratio : 1 / state.players.length;
-				}, this));
-
-				move = move ? move : legal[Math.floor(Math.random() * legal.length)];
+				var move = this.policies.choose(legal, this.translate, state, name);
 			}
-			
+						
 			// apply move
 			state = this.game.applyMove(move, state);
-			//if (!state) console.log(move);
 		}
 
 		return this.game.winner(state);
@@ -240,6 +197,10 @@ class ISMCTS {
 
 		return unchecked;
 	}
+}
+
+module.exports.testMove = function(game, n, settings) {
+	return (new ISMCTS(game, [], [], settings)).getMove(game.getState(), n);
 }
 
 module.exports.getMove = function(game, n, callback) {
