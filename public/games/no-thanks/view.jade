@@ -5,9 +5,6 @@ block heading
     span(style='color:#FFF')
       | {{ player.name.toUpperCase() }}
 
-
-
-
 block player
   +player-separator
   .player-building-area(
@@ -25,11 +22,9 @@ block player
     .score
       | {{ actions.score(player) }}
 
-
-
 block bottom
   +private
-    +single-button('chip(game)', '{{ you().chips }}', 'red')
+    +single-button('inputs.chip(game, meta)', '{{ you().chips }}', 'red')
   +public
-    +deck('/games/no-thanks/images/{{game.currentCard.value}}.png', 'game.deck.length', 'take(game)')
+    +deck('/games/no-thanks/images/{{game.currentCard.value}}.png', 'game.deck.length', 'inputs.take(game, meta)')
       +card-pile('game.currentCard.chips', 'red', '')

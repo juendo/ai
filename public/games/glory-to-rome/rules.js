@@ -473,6 +473,7 @@ var actions = {
         player.winner = true;
       }
     }, this);
+    if (!game.deck.length) game.finished = true;
     if (game.finished) {
       // for each material type
       for (var role in this.roles) {
@@ -802,11 +803,11 @@ var actions = {
 
     var name = game.deck.pop();
     player.hand.push({name: name, done: false, materials: [], selected: false, color: this.buildingColors[name]});
-    while (player.hand.length < this.handLimit(player) && game.deck.length > 0) {
+    while (player.hand.length < this.handLimit(player) && game.deck.length) {
       name = game.deck.pop();
       player.hand.push({name: name, done: false, materials: [], selected: false, color: this.buildingColors[name]});
     }
-    if (game.deck.length < 1) { game.finished = true };
+    if (!game.deck.length) { game.finished = true };
     return this.skip(move, game, player);
   },
 
@@ -1109,7 +1110,7 @@ var actions = {
         selected: true,
         color: this.buildingColors[name]
       });
-      if (game.deck.length <= 0) game.finished = true;
+      if (!game.deck.length) game.finished = true;
       return game;
     }
     return false;

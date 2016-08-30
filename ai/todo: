@@ -1,0 +1,12 @@
+todo:
+finish MO-ISMCTS algorithm
+test MCTS with win ratio vs plays
+add MCTS to appendix?
+integrate settings file for each game
+make sure it works online
+round off chapter 2: mcts diagram, iterations, discuss modifications
+tidy up implementation: remove unnecessary description, add necessary
+write up how no thanks is added to system
+finish writing implementation of moismcts
+evaluation and conclusion
+video

@@ -45,9 +45,7 @@ block player
     .pending-center
       .pending-card(
         ng-repeat='card in player.pending track by $index',
-        ng-click='yourTurn()\
-          && $parent.$index === meta.you\
-          && pendingClicked(you().actions[0].kind, {index: $index, card: card}, game)',
+        ng-click='inputs.pending(game, meta, {owner: $parent.$index, index: $index})',
         ng-style='{\
           "background-color": "#" + colors[card.color]\
         }'
@@ -62,20 +60,10 @@ block player
   )
     img.building(
       ng-drop='true',
-      ng-drop-success='yourTurn()\
-        && ($parent.$parent.$index === meta.you\
-          || actions.hasAbilityToUse("Stairway", you()))\
-        ? dragEnded(you().actions[0].kind, $data, game, $index, $parent.$parent.$index) : null',
+      ng-drop-success='inputs.drag(game, meta, {owner: $parent.$parent.$index, data: $data, index: $index})',
       ng-src='games/glory-to-rome/images/cards/{{ building.name }}.png',
       ng-alt='{{ building.name }}',
-      ng-click='yourTurn()\
-        && buildingClicked(you().actions[0].kind,\
-            building,\
-            $parent.$parent.$index === meta.you,\
-            $parent.$parent.$index,\
-            $index,\
-            game\
-          )',
+      ng-click='inputs.building(game, meta, {building: building, opponent: $parent.$parent.$index, index: $index})',
       ng-style='{\
         "border-color": "#" + (player.actions[0] ? actionBorderColors[player.actions[0].kind] : "000")\
       }',
@@ -120,8 +108,7 @@ block player
     img.building(
       ng-src='games/glory-to-rome/images/cards/{{ building }}.png',
       ng-alt='{{ building }}',
-      ng-click='yourTurn()\
-        && buildingClicked(you().actions[0].kind, building, true, player, $index, game)',
+      ng-click='inputs.building(game, meta, {building: building, opponent: meta.you, index: $index})',
       ng-style='{\
         "border-color": "#" + (player.actions[0] ? actionBorderColors[player.actions[0].kind] : "000"),\
         "opacity" : "0.5"\
@@ -191,12 +178,7 @@ block player
           index: $index,\
           material: material\
         }', 
-        ng-click='yourTurn()\
-          && $parent.$parent.$index == meta.you\
-          && stockpileClicked(you().actions[0].kind, {\
-            index: $index,\
-            material: material\
-          }, game)',
+        ng-click='inputs.stockpile(game, meta, {owner: $parent.$parent.$index, index: $index})',
         ng-style='{\
           "background-color": "#" + colors[material],\
           "width": 83.333333 / player.stockpile.length + "%"\
@@ -227,9 +209,8 @@ block bottom
         index: $index,\
         card: c\
       }', 
-      ng-click='yourTurn()\
-        && handClicked(you(), game, {index: $index, card: c}, you().actions[0].kind)', 
-      ng-repeat='c in you().hand track by $index', 
+      ng-click='inputs.hand(game, meta, $index)',
+      ng-repeat='c in you().hand track by $index',
       style='left: {{ $index * spacing(you().hand.length) }}px;bottom:{{ 4 + (c.selected ? 4 : 0) }}%;{{ isDragging ? "height:92%;" : ""}};{{ c.selected ? "-webkit-filter:brightness(90%);" : "" }}',
       ng-src='games/glory-to-rome/images/cards/{{ c.name }}.png', 
       ng-alt='{{ c.name }}'
@@ -237,16 +218,14 @@ block bottom
   img.jack(
     ng-src='/games/glory-to-rome/images/cards/Jack.png',
     ng-alt='Jack',
-    ng-click='yourTurn()\
-      && jackClicked(you().actions[0].kind, game)',
+    ng-click='inputs.jack(game, meta)'
   )
   .jack-counter
     | {{ game.pool.black }}
   img.deck(
     ng-src='/games/glory-to-rome/images/cards/deck.png',
     ng-alt='Deck',
-    ng-click='yourTurn()\
-      && deckClicked(you().actions[0].kind, game)'
+    ng-click='inputs.deck(game, meta)'
   )
   .deck-counter
     | {{ game.deck.length }}
@@ -257,16 +236,14 @@ block bottom
         && actions.hasAbilityToUse("Archway", you())',
       ng-drag-data='{color:color}',
       ng-repeat='color in poolColors',
-      ng-click='yourTurn()\
-        && poolClicked(you(), color, game, you().actions[0].kind)',
+      ng-click='inputs.pool(game, meta, color)',
       style='{{game.sites[color] == 0 ? ("border-style:solid;border-color:#" + colors[color] + ";") : ""}}background-color:#{{ colors[color] }};color: white;background:repeating-linear-gradient(45deg,#{{colors[color]}},#{{colors[color]}} {{game.sites[color] > 0 ? "7" : "0"}}px,#{{(6 - game.sites[color] < game.players.length) ? colors[color] : "222"}} {{game.sites[color] > 0 ? "7" : "0"}}px,#{{(6 - game.sites[color] < game.players.length) ? colors[color] : "222"}} 14px)'
     )
       | {{ game.pool[color] > 0 ? game.pool[color] : "" }}
   button.skip(
     ng-if='yourTurn()\
       && canSkipCurrentAction(you(), game)',
-    ng-click='yourTurn()\
-      && skipAction(you(), game, you().actions[0].kind)'
+    ng-click='inputs.skip(game, meta)'
   )
     | {{ you().actions[0] && you().actions[0].kind == 'Rome Demands' ? "GLORY TO ROME" : "SKIP ACTION" }}
   button.skip.nudge(

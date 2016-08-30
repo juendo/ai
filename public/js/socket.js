@@ -43,12 +43,15 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
     }
 
     // if you are the player who created the game, send the moves to the server to be put in the database
-    if ($rootScope.game.finished && $rootScope.meta.you === 0) {
+    if ($rootScope.game.finished && $rootScope.meta.you === 0 && !$rootScope.game.saved) {
       socket.emit('game-over', {
         initial: $rootScope.initial,
         moves: $rootScope.moves,
         winner: actions.winner($rootScope.game)
       });
+
+      // prevent duplicate entries
+      $rootScope.game.saved = true;
     }
 
     socket.emit('update', data);
@@ -74,12 +77,13 @@ if (typeof io !== 'undefined') angular.module('Game').factory('socket', function
     if ($rootScope.game.currentPlayer === $rootScope.meta.you && !$rootScope.game.finished) ding.play();
 
     // if you are the player who created the game, send the moves to the server to be put in the database
-    if ($rootScope.game.finished && $rootScope.meta.you === 0) {
+    if ($rootScope.game.finished && $rootScope.meta.you === 0 && !$rootScope.game.saved) {
       socket.emit('game-over', {
         initial: $rootScope.initial,
         moves: $rootScope.moves,
         winner: actions.winner($rootScope.game)
       });
+      $rootScope.game.saved = true;
     }
   });
 

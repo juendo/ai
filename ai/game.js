@@ -6,12 +6,13 @@ var clone = function(game) {
 
 class Game {
 
-	constructor(state) {
+	constructor(state, noSkip) {
 		this.state = state;
 		var rules = require('../public/games/' + state.gameName + '/rules');
     	this.actions = rules.actions;
 		this.legal = require('../public/games/' + state.gameName + '/legal');
 		this.observed = require('../public/games/' + state.gameName + '/observed');
+		this.noSkip = noSkip;
 	}
 
 	isTerminal(state) {
@@ -22,8 +23,17 @@ class Game {
 		return this.actions.applyMove(move, state);
 	}
 
-	winner(state) {
-		return this.actions.winner(state);
+	winner(state, qualities) {
+		if (state.finished) return this.actions.winner(state);
+		var winningIndex = -1;
+		var maxQ = -1;
+		for (var i = 0; i < qualities.length; i++) {
+			if (qualities[i] > maxQ) {
+				winningIndex = i;
+				maxQ = qualities[i];
+			}
+		}
+		return [winningIndex];
 	}
 
 	currentPlayer(state) {
@@ -31,7 +41,7 @@ class Game {
 	}
 
 	legalMoves(state) {
-		return this.legal({game: state}, null);
+		return this.legal({game: state}, null, this.noSkip);
 	}
 
 	getState() {
@@ -46,12 +56,20 @@ class Game {
 		return this.actions.determinise(clone(state));
 	}
 
-	translateMove(move, state, player) {
-		return this.observed(move, state, player);
+	translateMove(move, state, player, test) {
+		return this.observed(move, state, player, test);
 	}
 
 	players(state) {
 		return state.players;
+	}
+
+	turn(state) {
+		return state.turn;
+	}
+
+	getName(index, state) {
+		return state.players[index].name;
 	}
 }
 

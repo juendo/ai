@@ -3,6 +3,14 @@
 // export function for listening to the socket
 module.exports = function (nsp) {
 
+  var frequency = require('../db/move_frequency');
+  var sequence = require('../db/get_sequence');
+  var turns = require('../db/get_turns');
+  var user = require('../db/user_policy');
+  var createGame = require('../ai/game');
+  var ai = require('../ai/moismcts');
+  var GameData = require('../ai/GameData');
+
   return function(socket) {
 
     // when a player makes a move, update is sent
@@ -17,24 +25,28 @@ module.exports = function (nsp) {
 
       if (data.ai && !data.ai.finished) {
         var state = data.ai;
-        data.game = undefined;
-        var createGame = require('../ai/game');
-        var ai = require('../ai/moismcts');
+        delete data.game;
         var actions = require('../public/games/' + state.gameName + '/rules').actions;
-
+        var settings = require('../public/games/' + state.gameName + '/settings');
         var game = createGame(state);
-        ai.getMove(game, state.iterations, function(move) {
-          data.move = move;
-          actions.applyMove(data.move, state);
-          data.turn = state.turn;
-          data.update = true;
-          socket.emit('change', data);
-          data.update = false;
-          socket.broadcast.to(data.room).emit('change', data);
-        }, {
-          db: 0,
-          c: 0.875
-        }); 
+
+
+        sequence(state.gameName, function(seq) {
+          frequency(state.gameName, function(freq) {
+            turns(state.gameName, function(turn) {
+              user(state.gameName, ['Delargsson'], function(user) {
+
+                data.move = ai.testMove(game, new GameData(freq, seq, turn, user, game.players(state).length, settings));
+                actions.applyMove(data.move, state);
+                data.turn = state.turn;
+                data.update = true;
+                socket.emit('change', data);
+                data.update = false;
+                socket.broadcast.to(data.room).emit('change', data);
+              });
+            });
+          });
+        });
       }
     });
 

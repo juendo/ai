@@ -30,11 +30,12 @@ module.exports = function(data) {
       // check if the move was forced
 
       var m = {
-        move: translate(move, state),
+        move: translate[move.kind](move, state),
         user: state.players[state.currentPlayer].name,
         winning: winner.indexOf(state.currentPlayer) >= 0,
         players: state.players.length,
         turn: state.turn,
+        room: state.room,
         forced: false
       }
 
@@ -50,24 +51,45 @@ module.exports = function(data) {
     db.collection(state.gameName + '-wins').drop();
 
     db.collection(state.gameName).aggregate([
-        {
-          $match: {
-            'forced': {
-              $ne: true
-            }
-          }
-        },
-        {
-          $group: {
-            // group by number of players
-            _id: {
-              move: '$move',
-              players: '$players'
-            },
-            winning: { $sum: { $cond: ['$winning', 1, 0] } },
-            total: { $sum: 1 }
+      {
+        $match: {
+          turn: {
+            $ne: null
+          },
+          forced: false
+        }
+      },
+      {
+        $group: {
+          // remove duplicates
+          _id: {
+            move: '$move',
+            user: '$user',
+            winning: '$winning',
+            players: '$players',
+            turn: '$turn',
+            room: '$room',
+            forced: '$forced'          
           }
         }
+      },
+      {
+        $group: {
+          // group by number of players
+          _id: {
+            move: '$_id.move.kind',
+            players: '$_id.players'
+          },
+          winning: {
+            $sum: {
+              $cond: ['$_id.winning', 1, 0]
+            }
+          },
+          total: {
+            $sum: 1
+          }
+        }
+      }
       ]).toArray(function(err, docs) {
       assert.equal(err, null);
       console.log("Found the following records");

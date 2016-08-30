@@ -1,4 +1,4 @@
-module.exports = function(move, game, player) {
+module.exports = function(move, game, player, test) {
   // actions observed by their maker
   if ((typeof player === 'undefined') || player === game.currentPlayer) {
     switch (move.kind) {
@@ -59,7 +59,63 @@ module.exports = function(move, game, player) {
       default:
         return {};
     }
-  } else {
+  } else if (test) {
+    // moves observed by other players
+    switch (move.kind) {
+      case 'skip':
+        return {kind: 'skip'};
+      case 'sewer':
+        return {kind: 'sewer'};
+      case 'fountain':
+        return {kind: 'fountain'};
+      case 'prison':
+        return {kind: 'prison'};
+      case 'basilica':
+        return {kind: 'basilica'};
+      case 'atrium':
+        return {kind: 'atrium'};
+      case 'merchant':
+        return {kind: 'merchant'};
+      case 'fillFromPool':
+        var index = (typeof move.player !== 'undefined') ? move.player : game.currentPlayer;
+        return {kind: 'fillFromPool', opponent: (index === game.currentPlayer) ? "you" : "other"};
+      case 'fillFromStockpile':
+        var index = (typeof move.player !== 'undefined') ? move.player : game.currentPlayer;
+        return {kind: 'fillFromStockpile', opponent: (index === game.currentPlayer) ? "you" : "other"};
+      case 'fillFromHand':
+        return {kind: 'fillFromHand'};
+      case 'dock':
+        return {kind: 'dock'};
+      case 'laborer':
+        return {kind: 'laborer'};
+      case 'aqueduct':
+        return {kind: 'aqueduct'};
+      case 'bar':
+        return {kind: 'bar'};
+      case 'patron':
+        return {kind: 'patron'};
+      case 'takeJack':
+        return {kind: 'takeJack'};
+      case 'drawOne':
+        return {kind: 'drawOne'};
+      case 'refill':
+        return {kind: 'refill'};
+      case 'lay':
+        return {kind: 'lay', color: move.color};
+      case 'follow':
+        return {kind: 'follow'};
+      case 'lead':
+        return {kind: 'lead', color: move.role};
+      case 'legionary':
+        return {kind: 'legionary'};
+      case 'romeDemands':
+        return {kind: 'romeDemands'};
+      case 'vomitorium':
+        return {kind: 'vomitorium'};
+      default:
+        return {};
+    } 
+  } else if (!test) {
     // moves observed by other players
     switch (move.kind) {
       case 'skip':

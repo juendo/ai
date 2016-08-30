@@ -5,7 +5,7 @@ var Combinatorics = require('js-combinatorics');
 // AI that plays each action according to basic rules of thumb
 // want to get all possible legal moves for a player
 class LegalMoves {
-  constructor(data, current) {
+  constructor(data, current, noSkip) {
     // extract the VISIBLE information
 
     // the current player
@@ -15,6 +15,7 @@ class LegalMoves {
     var rules = require('./rules');
     this.actions = rules.actions;
     this.colors = ['yellow', 'green', 'grey', 'red', 'purple', 'blue'];
+    this.testNoSkip = noSkip;
   }
 
   moveset() {
@@ -147,7 +148,7 @@ class LegalMoves {
         }
       }
     }
-    moves.push({kind: 'skip'});
+    if (!moves.length || !this.testNoSkip) moves.push({kind: 'skip'});
     return moves;
   }
 
@@ -173,7 +174,7 @@ class LegalMoves {
         }
       }
     }
-    moves.push({kind: 'skip'});
+    if (!moves.length || !this.testNoSkip) moves.push({kind: 'skip'});
     return moves;
   }
 
@@ -192,7 +193,7 @@ class LegalMoves {
         }
       }
     }
-    moves.push({kind: 'skip'});
+    if (!moves.length || !this.testNoSkip) moves.push({kind: 'skip'});
     return moves;
   }
 
@@ -252,7 +253,7 @@ class LegalMoves {
       }
     }
 
-    moves.push({kind:'skip'});
+    if (!moves.length || !this.testNoSkip) moves.push({kind:'skip'});
 
     return moves;
   }
@@ -333,7 +334,7 @@ class LegalMoves {
       }
     }
 
-    moves.push({kind:'skip'});
+    if (!moves.length || !this.testNoSkip) moves.push({kind:'skip'});
 
     return moves;
   }
@@ -347,7 +348,7 @@ class LegalMoves {
         }
       }
     }
-    moves.push({kind: 'skip'});
+    if (!moves.length || !this.testNoSkip) moves.push({kind: 'skip'});
     return moves;
   }
 
@@ -365,7 +366,7 @@ class LegalMoves {
         }
       }
     }
-    if (moves.length === 0) moves.push({kind: 'skip'});
+    if (!moves.length) moves.push({kind: 'skip'});
 
     return moves;
   }
@@ -391,7 +392,7 @@ class LegalMoves {
         considered[this.player.pending[i].color] = true;
       }
     }
-    moves.push({kind: 'skip'});
+    if (!moves.length || !this.testNoSkip) moves.push({kind: 'skip'});
     return moves;
   }
 
@@ -413,7 +414,7 @@ class LegalMoves {
         }
       }
     }
-    moves.push({kind: 'skip'});
+    if (!moves.length || !this.testNoSkip) moves.push({kind: 'skip'});
     return moves;
   }
 

@@ -2,27 +2,15 @@
 
 var Node = require("tree-node");
 var deepEqual = require('deep-equal');
-var Frequency = require('./Frequency');
-var Policies = require('./Policies');
-
-Math.log = (function() {
-  var log = Math.log;
-  return function(n, base) {
-    return log(n)/(base ? log(base) : 1);
-  };
-})();
  
 class MOISMCTS {
 
-	constructor(game, docs, pols, settings) {
+	constructor(game, data) {
 		// docs have a move, a number of wins and a number of plays
 		// should be split by number of players
 		this.game = game;
-		this.db = settings.db;
-		this.c = settings.c;
+		this.data = data;
 
-		this.frequency = new Frequency(docs, this.db, this.game.getState().players.length);
-		this.policies = new Policies(pols);
 		this.translate = require('../public/games/' + game.getState().gameName + '/moves');
 	}
 
@@ -35,6 +23,9 @@ class MOISMCTS {
 			roots[i].data('player', i);
 		}
 
+		var legal = this.game.legalMoves(state);
+		if (legal.length === 1) return legal[0];
+
 		while (n--) {
 			// choose a determinisation from the root's information set
 			var determinisation = this.game.determinise(state);
@@ -42,14 +33,18 @@ class MOISMCTS {
 				root.data('determinisation', determinisation);
 			}, this);
 
-			var nodes = this.select(roots);
 
-			var unchecked = this.uncheckedActions(
-				nodes[this.game.currentPlayer(nodes[0].data('determinisation'))]
-			);
-			if (unchecked.length) nodes = this.expand(nodes, unchecked);
+			// object for tracking player's moves
+			var qualities = determinisation.players.map(function(player) {
+				return {
+					moves: [],
+					total: 0, 
+					plays: 0
+				};
+			});
 
-			var winner = this.simulate(this.game.clone(nodes[0].data('determinisation')));
+			var nodes = this.select(roots, qualities);
+			var winner = this.simulate(this.game.clone(nodes[0].data('determinisation')), qualities);
 			this.backpropagate(nodes, winner);
 		}
 
@@ -57,36 +52,54 @@ class MOISMCTS {
 		var root = roots[this.game.currentPlayer(state)];
 		return root.childIds.map(function(id) {
 			var child = root.getNode(id);
-			child.data('winRatio', child.data('wins') / child.data('plays'));
-			//console.log({move: child.data('move'), winRatio: child.data('winRatio')});
 			return child;
 		}).reduce(function(prev, current) {
-			return prev.data('winRatio') > current.data('winRatio') ? prev : current;
+			return prev.data('plays') > current.data('plays') ? prev : current;
 		}).data('move');
 	}
 
-	select(nodes) {
+	select(nodes, qualities) {
 		//console.log('select');
+		// as we explore the tree, track the moves made by each player
+		// track the quality of moves made by each player
 
 		var determinisation = nodes[0].data('determinisation');
 
-		while (!this.game.isTerminal(determinisation) 
-			&& !this.uncheckedActions(nodes[this.game.currentPlayer(determinisation)]).length) {
+		var unchecked = this.uncheckedActions(nodes[this.game.currentPlayer(determinisation)]);
 
-			var optimal = this.bestChild(nodes[this.game.currentPlayer(determinisation)]);
-			var next = this.game.applyMove(optimal, this.game.clone(determinisation));
+		while (!this.game.isTerminal(determinisation)) {
 
-			nodes = nodes.map(
-				this.findOrCreateChild(
-					optimal,
-					determinisation,
-					next
-				), this);
+			var optimal = this.bestChild(nodes[this.game.currentPlayer(determinisation)], unchecked, qualities);
 
-			//console.log('currentPlayer')
-			//console.log(this.game.currentPlayer(nodes[0].data('determinisation')));
-			determinisation = next;
+			// expand if optimal node is new
+			if (!optimal.checked) {
+				return this.expand(nodes, optimal.move, qualities);
+			} else {
+				optimal = optimal.move;
+				var next = this.game.applyMove(optimal, this.game.clone(determinisation));
+			
+				var currentPlayer = this.game.currentPlayer(determinisation);
+				var amv = this.data.amv(
+							optimal,
+							qualities[currentPlayer].moves[qualities[currentPlayer].moves.length - 1],
+							this.game.getName(currentPlayer, determinisation),
+							this.game.turn(determinisation)
+						);
 
+				qualities[currentPlayer].total += amv;
+				qualities[currentPlayer].plays++;
+				qualities[currentPlayer].moves.push(optimal);
+
+				nodes = nodes.map(
+					this.findOrCreateChild(
+						optimal,
+						determinisation,
+						next
+					), this);
+
+				determinisation = next;
+				unchecked = this.uncheckedActions(nodes[this.game.currentPlayer(determinisation)]);
+			}
 		}
 		
 		return nodes;
@@ -128,23 +141,43 @@ class MOISMCTS {
 		}
 	}
 
-	expand(nodes, unchecked) {
+	expand(nodes, move, qualities) {
 
-		var move = unchecked[Math.floor(Math.random() * unchecked.length)];
 		var determinisation = nodes[0].data('determinisation');
 
-		var wins = this.frequency.wins(this.translate(move, determinisation));
+		if (this.game.isTerminal(determinisation)) return nodes;
+
+		var currentPlayer = this.game.currentPlayer(determinisation);
+		var amv = this.data.amv(
+					move,
+					qualities[currentPlayer].moves[qualities[currentPlayer].moves.length - 1],
+					this.game.getName(currentPlayer, determinisation),
+					this.game.turn(determinisation)
+				);
+		var bias = this.data.bias(
+					move,
+					qualities[currentPlayer].moves[qualities[currentPlayer].moves.length - 1],
+					this.game.getName(currentPlayer, determinisation),
+					this.game.turn(determinisation)
+				);
+
+		qualities[currentPlayer].total += amv;
+		qualities[currentPlayer].plays++;
+		qualities[currentPlayer].moves.push(move);
+
+		// get the win ratio for each type of data
 
 		var child = new Node();
 		var next = this.game.applyMove(move, this.game.clone(determinisation));
+
 
 		child.data({
 			action: this.game.translateMove(move, determinisation, this.game.currentPlayer(determinisation)),
 			player: this.game.currentPlayer(determinisation),
 			determinisation: next,
 			move: move,
-			wins: wins,
-			plays: this.db,
+			wins: bias.wins,
+			plays: bias.plays,
 			availability: 0
 		});
 
@@ -153,30 +186,36 @@ class MOISMCTS {
 		return nodes.map(this.findOrCreateChild(move, determinisation, next), this);
 	}
 
-	simulate(state) {
-		////console.log('simulate');
-		while (!this.game.isTerminal(state)) {
-			// choose random legal move
+	simulate(state, qualities) {
+
+		var n = this.data.getSimLength();
+		while (!this.game.isTerminal(state) && n--) {
+
+			var currentPlayer = this.game.currentPlayer(state);
 			var legal = this.game.legalMoves(state);
-			//var move = legal[Math.floor(Math.random() * legal.length)];
+			var move = this.data.sim(
+						legal,
+						qualities[currentPlayer].moves[qualities[currentPlayer].moves.length - 1],
+						this.game.getName(currentPlayer, state),
+						this.game.turn(state)
+					);
+			var amv = this.data.amv(
+						move,
+						qualities[currentPlayer].moves[qualities[currentPlayer].moves.length - 1],
+						this.game.getName(currentPlayer, state),
+						this.game.turn(state)
+					);
 
-			var name = state.players[state.currentPlayer].name;
+			qualities[currentPlayer].total += amv;
+			qualities[currentPlayer].plays++;
+			qualities[currentPlayer].moves.push(move);
 
-			if (name === 'AI') {
-
-				var move = this.frequency.choose(legal, this.translate, state);
-
-			} else {
-				var move = this.policies.choose(legal, this.translate, state, name);
-			}
-
-			// apply move
 			state = this.game.applyMove(move, state);
-
-
 		}
 
-		return this.game.winner(state);
+		return this.game.winner(state, qualities.map(function(q) {
+			return q.total / q.plays;
+		}));
 	}
 
 	backpropagate(nodes, winner) {
@@ -210,8 +249,16 @@ class MOISMCTS {
 
 
 	// return the move of the best child
-	bestChild(node) {
+	bestChild(node, unchecked, qualities) {
 		//console.log('best child');
+
+		// check if using FPU
+		if (!this.data.usingFPU() && unchecked.length) {
+			return {
+				move: unchecked[Math.floor(Math.random() * unchecked.length)],
+				checked: false
+			}
+		}
 
 		// get the legal moves for the determinisation
 		var legal = {};
@@ -223,25 +270,68 @@ class MOISMCTS {
 			return legal[JSON.stringify(node.getNode(id).data('action'))];
 		});
 
-		// apply selection algorithm
-		var logSum = Math.log(compatible.map(function(id) {
-			return node.getNode(id).data('availability');
-		}).reduce((a, b) => a + b));
 
-		// return the optimal node
-		return legal[JSON.stringify(compatible.map(function(id) {
+		// if there are already compatible child nodes
+		if (compatible.length) {
 
-			var child = node.getNode(id);
+			var logSum = Math.log(compatible.map(function(id) {
+				return node.getNode(id).data('availability');
+			}).reduce((a, b) => a + b));
 
+			var bestChecked = compatible.map(function(id) {
+
+				var child = node.getNode(id);
+
+				return {
+					node: child,
+					v: (child.data('wins') / child.data('plays')) + this.data.getC() * Math.sqrt(logSum / child.data('plays'))
+				}
+			}, this).reduce(function(prev, current) {
+				return (prev.v > current.v) ? prev : current;
+			});
+
+			// get the highest value of v for 
+			var highestChecked = bestChecked.v;
+		} else {
+			var logSum = 0;
+			var highestChecked = -1;
+		}
+
+		if (unchecked.length) {
+			// get the highest value for unchecked actions
+			var bestUnchecked = unchecked.map(function(move) {
+
+				var currentPlayer = this.game.currentPlayer(node.data('determinisation'));
+
+				return {
+					move: move,
+					v: this.data.fpu(
+							this.game.translateMove(move, node.data('determinisation'), node.data('player')),
+							qualities[currentPlayer].moves[qualities[currentPlayer].moves.length - 1],
+							this.game.getName(currentPlayer, node.data('determinisation')),
+							this.game.turn(node.data('determinisation'))
+						) + this.data.getC() * Math.sqrt(logSum)
+				}
+			}, this).reduce(function(prev, current) {
+				return (prev.v > current.v) ? prev : current;
+			});
+			var highestUnchecked = bestUnchecked.v;
+		} else {
+			highestUnchecked = -1;
+		}
+		
+		if (bestChecked && highestChecked >= highestUnchecked) {
 			return {
-				node: child,
-				v: (child.data('wins') / child.data('plays')) + this.c * Math.sqrt(logSum / child.data('plays'))
+				move: legal[JSON.stringify(bestChecked.node.data('action'))],
+				checked: true
 			}
-		}, this).reduce(function(prev, current) {
-			return (prev.v > current.v) ? prev : current;
-		}).node.data('action'))];
+		} else {
+			return {
+				move: bestUnchecked.move,
+				checked: false
+			}
+		}
 
-		//optimal.data('determinisation', this.game.applyMove(legal[JSON.stringify(optimal.data('action'))], this.game.clone(node.data('determinisation'))));
 	}
 
 	uncheckedActions(node) {
@@ -273,21 +363,7 @@ class MOISMCTS {
 	}
 }
 
-module.exports.testMove = function(game, n, settings, docs) {
-	return (new MOISMCTS(game, docs, [], settings)).getMove(game.getState(), n);
-}
+module.exports.testMove = function(game, data) {
 
-module.exports.getMove = function(game, n, callback, settings) {
-
-	var freq = require('../db/move_frequency');
-	var user_pol = require('../db/user_policy');
-
-	freq(game.getState().gameName, function(freq) {
-
-		user_pol(game.getState().gameName, game.getState().players.map(function(player) {
-			return player.name;
-		}), function(pols) {
-			callback((new MOISMCTS(game, freq, pols, settings)).getMove(game.getState(), n));
-		});
-	});
+	return (new MOISMCTS(game, data)).getMove(game.getState(), data.getIterations());
 }
