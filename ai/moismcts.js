@@ -143,6 +143,7 @@ class MOISMCTS {
 
 	expand(nodes, move, qualities) {
 
+
 		var determinisation = nodes[0].data('determinisation');
 
 		if (this.game.isTerminal(determinisation)) return nodes;
@@ -310,7 +311,7 @@ class MOISMCTS {
 							qualities[currentPlayer].moves[qualities[currentPlayer].moves.length - 1],
 							this.game.getName(currentPlayer, node.data('determinisation')),
 							this.game.turn(node.data('determinisation'))
-						) + this.data.getC() * Math.sqrt(logSum)
+						)
 				}
 			}, this).reduce(function(prev, current) {
 				return (prev.v > current.v) ? prev : current;

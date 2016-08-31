@@ -69,7 +69,7 @@ GameData.prototype.sim = function(moves, prev, user, turn) {
 
 GameData.prototype.fpu = function(move, prev, user, turn) {
 
-	return this.getValue(move, prev, user, turn, this.settings.fpu);
+	return this.getValue(move, prev, user, turn, this.settings.fpu) * this.settings.fpu.coefficient;
 }
 
 module.exports = GameData;

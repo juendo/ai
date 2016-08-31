@@ -1,9 +1,9 @@
 module.exports = {
   n: 250,
-  c: 0.7,
+  c: 1.4,
   bias: {
-    db: 20,
-    freq: 1,
+    db: 0,
+    freq: 0,
     seq: 0,
     turn: 0,
     user: 0
@@ -16,7 +16,7 @@ module.exports = {
     boltzmann: 1
   },
   fpu: {
-    freq: 1,
+    freq: 0,
     seq: 0,
     turn: 0,
     user: 0
