@@ -1,27 +1,28 @@
 module.exports = [{
-  name: 'FPU freq = 1, coeff = 2',
+  name: 'Hendo',
   n: 250,
-  c: 1.4,
+  c: 0.7,
+  broader: 'normal',
   bias: {
-    db: 0,
-    freq: 0,
+    db: 20,
+    freq: 0.5,
     seq: 0,
     turn: 0,
-    user: 0
+    user: 0.5
   },
   sim: {
     freq: 0,
-    seq: 0,
+    seq: 0.5,
     turn: 0,
-    user: 0,
-    boltzmann: 1
+    user: 0.5,
+    boltzmann: 0.25
   },
   fpu: {
-    coefficient: 2,
-    freq: 1,
+    coefficient: 1.7,
+    freq: 0.5,
     seq: 0,
     turn: 0,
-    user: 0
+    user: 0.5
   },
   amv: {
     simLength: -1,
@@ -34,7 +35,8 @@ module.exports = [{
 {
   name: 'normal',
   n: 250,
-  c: 1.4,
+  c: 0.7,
+  broader: 'normal',
   bias: {
     db: 0,
     freq: 0,

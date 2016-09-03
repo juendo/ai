@@ -9,7 +9,6 @@ var Sequence = function(docs) {
 		this.docs[doc.first + ' ' + doc.second] = doc.ratio;
 	}, this);
 
-    console.log(this.docs);
 }
 
 Sequence.prototype.ratio = function(prev, curr) {

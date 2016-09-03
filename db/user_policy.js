@@ -87,7 +87,6 @@ var findDocuments = function(game, users, db, callback) {
         }
       ]).toArray(function(err, docs) {
       assert.equal(err, null);
-      console.log(JSON.stringify(docs, 1, 4));
       callback(docs);
     });
 }

@@ -1,6 +1,7 @@
 module.exports = {
   n: 250,
-  c: 1.4,
+  c: Math.SQRT2,
+  broader: false,
   bias: {
     db: 0,
     freq: 0,

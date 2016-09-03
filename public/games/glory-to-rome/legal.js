@@ -116,9 +116,7 @@ class LegalMoves {
     }, this);
 
     if (this.actions.hasAbilityToUse('Palace', this.player)) {
-      this.colors.forEach(function(role) {
-        if (colourCounts[role].length + colourCounts['black'].length) moves.push({kind: 'lead', cards: colourCounts[role].concat(colourCounts['black']), role: role});
-      }, this);
+      if (colourCounts[this.player.actions[0].color].length + colourCounts['black'].length) moves.push({kind: 'follow', cards: colourCounts[this.player.actions[0].color].concat(colourCounts['black'])});
     }
 
     moves.push({kind: this.player.hand.length < this.actions.handLimit(this.player) ? 'refill' : 'drawOne' });
@@ -141,12 +139,12 @@ class LegalMoves {
       } 
       if (!this.player.actions[0].takenFromDeck && this.actions.hasAbilityToUse('Bar', this.player)) {
         moves.push({kind: 'bar'});
-      } 
+      }
       if (!this.player.actions[0].takenFromHand && this.actions.hasAbilityToUse('Aqueduct', this.player)) {
         for (var i = 0; i < this.player.hand.length; i++) {
           if (this.player.hand[i].color !== 'black') moves.push({kind: 'aqueduct', data: {card: this.player.hand[i], index: i}});
         }
-      }
+      } 
     }
     if (!moves.length || !this.testNoSkip) moves.push({kind: 'skip'});
     return moves;
@@ -165,13 +163,13 @@ class LegalMoves {
           considered[this.player.stockpile[i].color] = true;
         }
       }
-      if (!this.player.actions[0].takenFromStockpile && this.actions.hasAbilityToUse('Atrium', this.player)) {
+      if (this.actions.hasAbilityToUse('Atrium', this.player)) {
         moves.push({kind: 'atrium'});
       }
-      if (!this.player.actions[0].takenFromHand && this.actions.hasAbilityToUse('Basilica', this.player)) {
-        for (var i = 0; i < this.player.hand.length; i++) {
-          if (this.player.hand[i].color !== 'black') moves.push({kind: 'basilica', data: {card: this.player.hand[i], index: i}});
-        }
+    }
+    if (this.actions.vaultLimit(this.player) > this.player.vault.length && !this.player.actions[0].takenFromHand && this.actions.hasAbilityToUse('Basilica', this.player)) {
+      for (var i = 0; i < this.player.hand.length; i++) {
+        if (this.player.hand[i].color !== 'black') moves.push({kind: 'basilica', data: {card: this.player.hand[i], index: i}});
       }
     }
     if (!moves.length || !this.testNoSkip) moves.push({kind: 'skip'});
@@ -187,10 +185,10 @@ class LegalMoves {
           moves.push({kind: 'laborer', color: color});
         }
       }, this);
-      if (!this.player.actions[0].takenFromHand && this.actions.hasAbilityToUse('Dock', this.player)) {
-        for (var i = 0; i < this.player.hand.length; i++) {
-          if (this.player.hand[i].color !== 'black') moves.push({kind: 'dock', data: {card: this.player.hand[i], index: i}});
-        }
+    }
+    if (!this.player.actions[0].takenFromHand && this.actions.hasAbilityToUse('Dock', this.player)) {
+      for (var i = 0; i < this.player.hand.length; i++) {
+        if (this.player.hand[i].color !== 'black') moves.push({kind: 'dock', data: {card: this.player.hand[i], index: i}});
       }
     }
     if (!moves.length || !this.testNoSkip) moves.push({kind: 'skip'});

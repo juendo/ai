@@ -76,7 +76,7 @@ sequence('glory-to-rome', function(seq) {
 
     turns('glory-to-rome', function(turn) {
 
-      user('glory-to-rome', ['Delargsson'], function(user) {
+      user('glory-to-rome', ['Delargsson', 'Hendo'], function(user) {
 
         var n = 60;
 

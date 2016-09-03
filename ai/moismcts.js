@@ -10,6 +10,7 @@ class MOISMCTS {
 		// should be split by number of players
 		this.game = game;
 		this.data = data;
+		this.test = data.broader();
 
 		this.translate = require('../public/games/' + game.getState().gameName + '/moves');
 	}
@@ -109,23 +110,33 @@ class MOISMCTS {
 
 		return function(node) {
 
-			var observed = this.game.translateMove(move, prev, node.data('player'));
+			var observed = this.game.translateMove(move, prev, node.data('player'), this.test);
 			//console.log(observed);
 
 			var childIDs = node.childIds.filter(function(id) {
 				return deepEqual(node.getNode(id).data('action'), observed);
 			});
 
-			//console.log(childIDs);
+			if (childIDs.length > 1) console.log(observed);
 
 			if (!childIDs.length) {
+				if (node.data('player') === this.game.currentPlayer(prev)) {
+					console.log('should be expanding');
+					console.log(JSON.stringify(observed));
+					console.log(childIDs);
+				}
 				var child = new Node();
 				node.appendChild(child);
 				child.data({
 					player: node.data('player'),
+					actingPlayer: this.game.currentPlayer(prev),
 					action: observed,
 					move: move,
-					determinisation: next
+					determinisation: next,
+					plays: 0,
+					wins: 0,
+					availability: 0,
+					addedHere: true
 				});
 			} else {
 				var child = node.getNode(childIDs[0]);
@@ -133,7 +144,6 @@ class MOISMCTS {
 
 			child.data({
 				move: move,
-				action: observed,
 				determinisation: next
 			});
 
@@ -147,6 +157,8 @@ class MOISMCTS {
 		var determinisation = nodes[0].data('determinisation');
 
 		if (this.game.isTerminal(determinisation)) return nodes;
+
+		//console.log('depth', this.game.turn(determinisation));
 
 		var currentPlayer = this.game.currentPlayer(determinisation);
 		var amv = this.data.amv(
@@ -173,8 +185,9 @@ class MOISMCTS {
 
 
 		child.data({
-			action: this.game.translateMove(move, determinisation, this.game.currentPlayer(determinisation)),
-			player: this.game.currentPlayer(determinisation),
+			action: this.game.translateMove(move, determinisation, currentPlayer, this.test),
+			player: currentPlayer,
+			actingPlayer: currentPlayer,
 			determinisation: next,
 			move: move,
 			wins: bias.wins,
@@ -182,7 +195,7 @@ class MOISMCTS {
 			availability: 0
 		});
 
-		nodes[this.game.currentPlayer(determinisation)].appendChild(child);
+		nodes[currentPlayer].appendChild(child);
 
 		return nodes.map(this.findOrCreateChild(move, determinisation, next), this);
 	}
@@ -235,12 +248,24 @@ class MOISMCTS {
 					// get legal moves for parent determinisation
 					var legal = {};
 					this.game.legalMoves(node._parent.data('determinisation')).forEach(function(move) {
-						legal[JSON.stringify(this.game.translateMove(move, node._parent.data('determinisation')))] = move;
+						legal[
+							JSON.stringify(
+								this.game.translateMove(
+									move,
+									node._parent.data('determinisation'),
+									node._parent.data('player'),
+									this.test
+								)
+							)
+						] = move;
 					}, this);
 
 					node._parent.childIds.forEach(function(id) {
 						var sibling = node._parent.getNode(id);
-						if (legal[JSON.stringify(sibling.data('action'))]) sibling.data('availability', sibling.data('availability') + 1);
+						if (legal[
+								JSON.stringify(sibling.data('action'))
+							])
+							sibling.data('availability', sibling.data('availability') + 1);
 					}, this);
 				}
 				node = node._parent;
@@ -264,16 +289,18 @@ class MOISMCTS {
 		// get the legal moves for the determinisation
 		var legal = {};
 		this.game.legalMoves(node.data('determinisation')).forEach(function(move) {
-			legal[JSON.stringify(this.game.translateMove(move, node.data('determinisation'), node.data('player')))] = move;
+			legal[JSON.stringify(this.game.translateMove(move, node.data('determinisation'), undefined, this.test))] = move;
 		}, this);
 		// get the compatible child nodes
+		var currentPlayer = this.game.currentPlayer(node.data('determinisation'));
 		var compatible = node.childIds.filter(function(id) {
-			return legal[JSON.stringify(node.getNode(id).data('action'))];
+			return legal[JSON.stringify(node.getNode(id).data('action'))] && node.getNode(id).data('actingPlayer') === currentPlayer;
 		});
 
 
 		// if there are already compatible child nodes
 		if (compatible.length) {
+
 
 			var logSum = Math.log(compatible.map(function(id) {
 				return node.getNode(id).data('availability');
@@ -283,9 +310,23 @@ class MOISMCTS {
 
 				var child = node.getNode(id);
 
+				var v = (child.data('wins') / child.data('plays')) + this.data.getC() * Math.sqrt(logSum / child.data('plays'));
+				
+				if (isNaN(v)) {
+					console.log(JSON.stringify(legal));
+					console.log(JSON.stringify(qualities));
+					console.log(JSON.stringify(node._data));
+					console.log(JSON.stringify(node._parent._data));
+					console.log(JSON.stringify(child._data));
+					console.log(child.data('plays'));
+					console.log(logSum);
+					console.log(JSON.stringify(compatible));
+					console.log(JSON.stringify(unchecked));
+				}
+
 				return {
 					node: child,
-					v: (child.data('wins') / child.data('plays')) + this.data.getC() * Math.sqrt(logSum / child.data('plays'))
+					v: v
 				}
 			}, this).reduce(function(prev, current) {
 				return (prev.v > current.v) ? prev : current;
@@ -294,7 +335,7 @@ class MOISMCTS {
 			// get the highest value of v for 
 			var highestChecked = bestChecked.v;
 		} else {
-			var logSum = 0;
+			var bestChecked;
 			var highestChecked = -1;
 		}
 
@@ -307,7 +348,7 @@ class MOISMCTS {
 				return {
 					move: move,
 					v: this.data.fpu(
-							this.game.translateMove(move, node.data('determinisation'), node.data('player')),
+							this.game.translateMove(move, node.data('determinisation'), undefined, this.test),
 							qualities[currentPlayer].moves[qualities[currentPlayer].moves.length - 1],
 							this.game.getName(currentPlayer, node.data('determinisation')),
 							this.game.turn(node.data('determinisation'))
@@ -318,15 +359,23 @@ class MOISMCTS {
 			});
 			var highestUnchecked = bestUnchecked.v;
 		} else {
-			highestUnchecked = -1;
+			var highestUnchecked = -1;
 		}
-		
-		if (bestChecked && highestChecked >= highestUnchecked) {
+
+		if (bestChecked && highestChecked > highestUnchecked) {
 			return {
 				move: legal[JSON.stringify(bestChecked.node.data('action'))],
 				checked: true
 			}
 		} else {
+			if (!bestUnchecked) {
+				console.log(bestChecked);
+				console.log(highestChecked);
+				console.log(highestUnchecked);
+				console.log(JSON.stringify(qualities));
+				console.log(unchecked);
+				console.log(JSON.stringify(node.data('determinisation')));
+			}
 			return {
 				move: bestUnchecked.move,
 				checked: false
@@ -342,15 +391,21 @@ class MOISMCTS {
 		var legal = this.game.legalMoves(node.data('determinisation'));
 
 		// get the moves for the child nodes
+		// only want the child nodes for which the acting player is the current player
+		var currentPlayer = this.game.currentPlayer(node.data('determinisation'));
 		var checked = node.childIds.map(function(id) {
-			return node.getNode(id).data('action');
-		});
+			return node.getNode(id);
+		}).filter(function(child) {
+			return child.data('actingPlayer') === currentPlayer;
+		}).map(function(child) {
+			return child.data('action');
+		}, this);
 
 		// find out which legal moves do not already have child nodes
 		var unchecked = [];
 		for (var i = 0; i < legal.length; i++) {
 			var chkd = false;
-			var translated = this.game.translateMove(legal[i], node.data('determinisation'));
+			var translated = this.game.translateMove(legal[i], node.data('determinisation'), undefined, this.test);
 			for (var j = 0; j < checked.length; j++) {
 				if (deepEqual(translated, checked[j])) {
 					chkd = true;

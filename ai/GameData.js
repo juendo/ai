@@ -15,6 +15,11 @@ var GameData = function(freqDocs, seqDocs, turnDocs, userDocs, playerCount, sett
 	this.settings = settings;
 }
 
+GameData.prototype.broader = function() {
+	
+	return this.settings.broader;
+}
+
 GameData.prototype.getIterations = function() {
 
 	return this.settings.n;
