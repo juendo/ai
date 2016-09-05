@@ -1,11 +1,11 @@
 module.exports = {
-  /*'no-thanks': {
+  'no-thanks': {
     link: 'no-thanks',
     name: 'No Thanks',
     color: '#ca0',
     active: '#DDA',
     inactive: '#550'
-  },*/
+  },
   'glory-to-rome': {
     link: 'glory-to-rome',
     name: 'Glory to Rome',

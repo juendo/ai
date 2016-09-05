@@ -1,4 +1,4 @@
-module.exports = {
+moves = {
   
   take: function(move, game) {
   	return {kind: 'take', card: game.currentCard.value};
@@ -8,4 +8,8 @@ module.exports = {
   	return {kind: 'chip', card: game.currentCard.value};
   }
   
+}
+
+module.exports = function(move, game) {
+  return moves[move.kind](move, game);
 }

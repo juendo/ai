@@ -22,79 +22,36 @@ var findDocuments = function(db, callback) {
   // remove undesired names
   //moves.remove(queries.delete_names);
   //db.collection('glory-to-rome-wins').drop();
-  db.collection('glory-to-rome').aggregate([
+  db.collection('glory-to-rome-games').aggregate([
   
-
-      {
-        $group: {
-          // remove duplicates
-          _id: {
-            move: '$move',
-            user: '$user',
-            winning: '$winning',
-            players: '$players',
-            turn: '$turn',
-            room: '$room',
-            forced: '$forced'          
-          }
-        }
+  {
+    $group: {
+      _id: '$room',
+      players: {
+        $addToSet: '$user'
+  
       },
-      {
-        $group: {
-          // group by number of players
-          _id: {
-            move: '$_id.move.kind',
-            players: '$_id.players'
-          },
-          winning: {
-            $sum: {
-              $cond: ['$_id.winning', 1, 0]
-            }
-          },
-          total: {
-            $sum: 1
-          }
+      winning: {
+        $addToSet: {
+          $cond: ['$winning', '$user', '']
         }
       }
+    }
+  },
+    {
+      $match: {
+        'players': { $all: [ "Hendo" , "Delargsson" ] }
+      }
+    }
+     
       
     ]).toArray(function(err, docs) {
       assert.equal(err, null);
       console.log("Found the following records")
-      this.docs = {};
-      this.playerCount = 2;
-      this.totalWins = 0;
-      this.size = docs.length;
+      
 
-      docs.forEach(function(doc) {
+      console.log(docs);
 
-        if (typeof this.docs[JSON.stringify(doc['_id']['move'])] === 'undefined') {
-
-          this.docs[JSON.stringify(doc['_id']['move'])] = {
-            total: doc['total'],
-            ratio: Math.pow(
-              doc['winning'] / doc['total'],
-              logBase(playerCount, doc['_id']['players'])
-            )
-          };
-          
-        } else {
-
-          var record = this.docs[JSON.stringify(doc['_id']['move'])];
-
-          record.ratio = (record.total * record.ratio + Math.pow(
-              doc['winning'] / doc['total'],
-              logBase(playerCount, doc['_id']['players'])
-            ) * doc['total']
-          ) / (doc['total'] + record.total);
-
-          record.total = doc['total'] + record.total;
-
-        } 
-      }, this);
-
-      console.log(this.docs);
-
-      callback(docs);
   });
   
 }
