@@ -125,7 +125,7 @@ var actions = {
     }
     state.players.forEach(function(player) {
       player.cards.forEach(function(card) {
-        cards[card - 3] = true;
+        seen[card - 3] = true;
       });
     });
     var unseen = [];
