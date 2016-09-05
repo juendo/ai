@@ -1,26 +1,26 @@
 module.exports = {
   n: 250,
-  c: Math.SQRT2,
-  broader: false,
+  c: 0.7,
+  broader: 'normal',
   bias: {
-    db: 0,
-    freq: 0,
+    db: 20,
+    freq: 0.75,
     seq: 0,
     turn: 0,
-    user: 0
+    user: 0.25
   },
   sim: {
     freq: 0,
-    seq: 0,
+    seq: 0.75,
     turn: 0,
-    user: 0,
-    boltzmann: 1
+    user: 0.25,
+    boltzmann: 0.25
   },
   fpu: {
-    freq: 0,
+    freq: 0.75,
     seq: 0,
     turn: 0,
-    user: 0
+    user: 0.25
   },
   amv: {
     simLength: -1,

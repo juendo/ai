@@ -312,18 +312,7 @@ class MOISMCTS {
 
 				var v = (child.data('wins') / child.data('plays')) + this.data.getC() * Math.sqrt(logSum / child.data('plays'));
 				
-				if (isNaN(v)) {
-					console.log(JSON.stringify(legal));
-					console.log(JSON.stringify(qualities));
-					console.log(JSON.stringify(node._data));
-					console.log(JSON.stringify(node._parent._data));
-					console.log(JSON.stringify(child._data));
-					console.log(child.data('plays'));
-					console.log(logSum);
-					console.log(JSON.stringify(compatible));
-					console.log(JSON.stringify(unchecked));
-				}
-
+				
 				return {
 					node: child,
 					v: v
@@ -368,14 +357,7 @@ class MOISMCTS {
 				checked: true
 			}
 		} else {
-			if (!bestUnchecked) {
-				console.log(bestChecked);
-				console.log(highestChecked);
-				console.log(highestUnchecked);
-				console.log(JSON.stringify(qualities));
-				console.log(unchecked);
-				console.log(JSON.stringify(node.data('determinisation')));
-			}
+			
 			return {
 				move: bestUnchecked.move,
 				checked: false

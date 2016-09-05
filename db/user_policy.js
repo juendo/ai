@@ -11,6 +11,10 @@ if (process.env.DB_PASS) {
 
 var findDocuments = function(game, users, db, callback) {
 
+  users = users.map(function(user) {
+    return user === 'AI' ? 'Hendo' : user;
+  });
+
   db.collection(game).aggregate([
         {
           $match: {

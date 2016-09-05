@@ -43,6 +43,7 @@ GameData.prototype.usingFPU = function() {
 GameData.prototype.getValue = function(move, prev, user, turn, settings) {
 
 	var value = 1;
+	user = user === 'AI' ? 'Hendo' : user;
 
 	value *= settings.freq ? Math.pow(this.freq.ratio(move), settings.freq) : 1;
 	value *= settings.seq ? Math.pow(this.seq.ratio(prev, move), settings.seq) : 1;
