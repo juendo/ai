@@ -30,7 +30,7 @@ module.exports = function(data) {
       // check if the move was forced
 
       var m = {
-        move: translate[move.kind](move, state),
+        move: translate(move, state),
         user: state.players[state.currentPlayer].name,
         winning: winner.indexOf(state.currentPlayer) >= 0,
         players: state.players.length,
