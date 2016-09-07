@@ -2,7 +2,6 @@
 
 var state = {
   gameName: 'no-thanks',
-  iterations: 1000,
   players: [
     {
       chips: 11,

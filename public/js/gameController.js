@@ -7,7 +7,7 @@ angular.module('Game').controller('GameController', function($scope, socket, act
   $scope.inputs = {};
   Object.keys(inputs).forEach(function(input) {
     $scope.inputs[input] = function(game, meta, data) {
-      if (game.currentPlayer !== meta.you) return;
+      if (game.currentPlayer !== meta.you || game.finished) return;
       var move = inputs[input](game, meta, data);
       if (typeof move !== 'undefined' && actions.applyMove(move, game)) socket.update();
     }
