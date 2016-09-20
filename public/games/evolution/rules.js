@@ -239,9 +239,10 @@ var actions = {
         }
         // move fat tissue down
         if (species.fat) {
-          while (species.food < species.population && species.fat)
+          while (species.food < species.population && species.fat) {
             species.food++;
             species.fat--;
+          }
         }
       }, this);
     }, this);
