@@ -12,6 +12,13 @@ module.exports = {
     color: '#ca0',
     active: '#DDA',
     inactive: '#550'
+  },
+  'evolution': {
+    link: 'evolution',
+    name: 'Evolution',
+    color: '#009933',
+    active: '#e6ffee',
+    inactive: '#004d1a'
   }/*,
   'skull': {
     link: 'skull',

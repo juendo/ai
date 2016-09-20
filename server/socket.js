@@ -35,7 +35,6 @@ module.exports = function (nsp) {
           frequency(state.gameName, function(freq) {
             turns(state.gameName, function(turn) {
               user(state.gameName, ['Delargsson'], function(user) {
-
                 data.move = ai.testMove(game, new GameData(freq, seq, turn, user, game.players(state).length, settings));
                 actions.applyMove(data.move, state);
                 data.turn = state.turn;

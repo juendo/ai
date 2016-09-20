@@ -1,0 +1,110 @@
+extends ../../../views/mixins.jade
+
+block heading
+  .player-name
+      span(style='color:brown')
+          | {{ $index == game.startPlayer ? 'S ' : '' }}
+      span(style='color:#004d1a')
+          | {{ $index == game.startPlayer ? '| ' : '' }}
+      span(style='color:#FFF')
+          | {{ player.name.toUpperCase() }}
+      br
+      span(style='color:#004d1a')
+          | {{ player.hand.length }} CARDS
+  .player-action-container(ng-if='game.currentPlayer === $index')
+    .player-action(
+      ng-style='{\
+        "color": "rgb(0, 77, 26)",\
+        "background-color": "white"\
+      }'
+    )
+      | {{ game.phase }}
+  
+block player
+  +player-separator
+    .left-button(ng-click='inputs.newSpecies(game, meta, {player: $index, direction: "left"})')
+      | L
+    .evolution-spacing
+    .right-button(ng-click='inputs.newSpecies(game, meta, {player: $index, direction: "right"})')
+      | R
+  .species(
+    ng-repeat='animal in player.species track by $index',
+    ng-style='{ "max-height": maxSpeciesHeight() + "px", "height": speciesHeight(player.species.length) + "px" }'
+  )
+    .population(ng-style='{"background-color": animal.attacking ? "crimson" : "brown", "max-width": 24 + "%", "width": (742/1034) * speciesHeight(player.species.length) + "px", "font-size": minim(12,((speciesHeight(player.species.length)/maxSpeciesHeight()) * 12)) + "px"}')
+      .tracker-pad
+      .tracker(ng-click='inputs.feed(game, meta, {species: $index, player: $parent.$index})')
+        .track-box(ng-repeat='i in [6,5,4,3,2,1] track by $index')
+          .track-interior.food(ng-class='{ "track-highlighted": i <= animal.food }')
+        .track-box(ng-style='{color: "rgb(0, 153, 51)"}')
+          | F
+      .tracker(ng-click='inputs.population(game, meta, {species: $index, player: $parent.$index})')
+        .track-box(ng-repeat='i in [6,5,4,3,2,1] track by $index')
+          .track-interior.pop(ng-class='{ "track-highlighted": i <= animal.population }')
+        .track-box(ng-style='{color: "white"}')
+          | P
+      .tracker(ng-click='inputs.body(game, meta, {species: $index, player: $parent.$index})')
+        .track-box(ng-repeat='i in [6,5,4,3,2,1] track by $index')
+          .track-interior.body(ng-class='{ "track-highlighted": i <= animal.body, "track-fat": i <= animal.fat }')
+        .track-box(ng-style='{color: "black"}')
+          | B
+    img.trait(
+      ng-repeat='trait in animal.traits track by $index',
+      ng-src='games/evolution/images/{{ (trait.hidden || trait.negated) ? "back" : trait.name + trait.food }}.jpg',
+      ng-alt='{{ (trait.hidden || trait.negated) ? "back" : trait.name + trait.food }}',
+      ng-click='inputs.trait(game, meta, {player: $parent.$parent.$index, species: $parent.$index, trait: $index})',
+      title="{{(!trait.hidden || $parent.$parent.$index === meta.you) ? actions.description(trait.name) : ''}}"
+    )
+    .trait-gap(
+      ng-style='{"width": 25*(3-animal.traits.length) + "%"}',
+      ng-click='inputs.species(game, meta, {player: $parent.$index, species: $index})'
+    )
+  .score-box(
+    ng-if='game.finished',
+    ng-style='{\
+      "opacity": game.finished ? 1 : 0,\
+      "background-color":\
+        actions.winner(game).contains($index) ? "rgba(44, 167, 61, 0.5)" : "rgba(229, 2, 12, 0.5)"\
+    }'
+  )
+    .score
+      | {{ actions.score(player) }}
+  
+block bottom
+  #hand(
+    ng-hover-hand=''
+  )
+    img.hand(
+      ng-hover-card,
+      ng-repeat='c in you().hand track by $index',
+      style='left: {{ $index * spacing(you().hand.length) }}px;bottom:{{ 4 + (c.selected ? 4 : 0) }}%;{{ isDragging ? "height:92%;" : ""}};{{ c.selected ? "-webkit-filter:brightness(90%);" : "" }}',
+      ng-src='games/evolution/images/{{ c.name + c.food }}.jpg', 
+      ng-click='inputs.hand(game, meta, $index)',
+      ng-alt='{{ c.name + c.food }}',
+      title="{{actions.description(c.name)}}"
+    )
+  .watering-hole(ng-click='inputs.wateringHole(game, meta, null)')
+    | {{ game.food }}
+  img.deck.evolution(
+    ng-src='/games/evolution/images/back.jpg',
+    ng-alt='Deck'
+  )
+  .deck-counter(ng-style='{"color":"black"}')
+    | {{ game.deck.length }}
+  img.jack.evolution(
+    ng-if='game.discard.length',
+    ng-src='/games/evolution/images/{{ game.discard[0].name + game.discard[0].food }}.jpg',
+    ng-alt='Discard Pile'
+  )
+  button.skip.evolution(
+    ng-if='yourTurn() && game.phase === "PLAY CARDS" || (game.phase === "FEED" && !actions.canEatWithoutIntelligence(you(), game)) || game.phase === "INTELLIGENCE" || game.phase === "ATTACK"',
+    ng-click='inputs.done(game, meta)'
+  )
+    | {{ game.phase === 'PLAY CARDS' ? 'DONE' : 'PASS' }}
+  button.skip.nudge.evolution(
+    ng-if='(!yourTurn()) || game.finished',
+    ng-click='(!yourTurn() || game.finished)\
+      && triggerReconnect()',
+    ng-style=''
+  )
+    | NUDGE

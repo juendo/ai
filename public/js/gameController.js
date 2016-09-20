@@ -155,6 +155,24 @@ angular.module('Game').controller('GameController', function($scope, socket, act
     return width;
   }
 
+  $scope.speciesHeight = function(number) {
+    var fullHeight = $(window).height() * 0.68;
+    var fullWidth = $(window).width();
+    var players = $scope.game.players.length;
+
+    return (fullHeight - 0.02 * number * fullWidth / players) / number;
+  }
+
+  $scope.maxSpeciesHeight = function() {
+    var fullHeight = $(window).height() * 0.68;
+    var fullWidth = $(window).width();
+    var players = $scope.game.players.length;
+
+    return (fullWidth * 0.93 * 0.25 / players) * (1034 / 742);
+  }
+
+  $scope.minim = Math.min;
+
   $(window).resize(function() {
     $scope.$apply();
   });

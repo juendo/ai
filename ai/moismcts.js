@@ -18,6 +18,7 @@ class MOISMCTS {
 	getMove(state, n) {
 
 		// create game tree for each player
+		console.log('starting');
 		var roots = [];
 		for (var i = 0; i < this.game.players(state).length; i++) {
 			roots[i] = new Node();
@@ -53,6 +54,7 @@ class MOISMCTS {
 		var root = roots[this.game.currentPlayer(state)];
 		return root.childIds.map(function(id) {
 			var child = root.getNode(id);
+			console.log(JSON.stringify({move: child.data('move'), plays: child.data('plays')}));
 			return child;
 		}).reduce(function(prev, current) {
 			return prev.data('plays') > current.data('plays') ? prev : current;
