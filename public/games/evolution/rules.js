@@ -117,6 +117,7 @@ var actions = {
     });
 
     game.startPlayer = Math.floor(Math.random() * game.players.length);
+    game.currentPlayer = game.startPlayer;
 
     return game;
   },
