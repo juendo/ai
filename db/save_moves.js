@@ -25,11 +25,10 @@ module.exports = function(data) {
 
     var store = db.collection(state.gameName);
 
-    console.log(moves);
-
     store.insert(moves.map(function(move) {
 
       // check if the move was forced
+      // DEAL WITH RANDOM OUTCOMES
 
       var m = {
         move: translate(move, state),

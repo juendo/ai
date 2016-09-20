@@ -116,7 +116,7 @@ var actions = {
       player.hand.push(game.deck.pop());
     });
 
-    game.startPlayer = 0;
+    game.startPlayer = Math.floor(Math.random() * game.players.length);
 
     return game;
   },
