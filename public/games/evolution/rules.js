@@ -438,6 +438,7 @@ var actions = {
   },
 
   replace: function(move, game) {
+    // cant replace with trait you already have?
     var player = game.players[game.currentPlayer];
     var species = player.species[move.species];
     var card = player.hand[move.card];

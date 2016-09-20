@@ -141,7 +141,9 @@ var inputs = {
 
   	if (player === game.players[data.player]
   		&& game.phase === 'PLAY CARDS'
-  		&& selected.length === 1)
+  		&& selected.length === 1
+      && species.traits.length === 3
+      && !this.hasTrait(species, player.hand[selected[0]].name))
   	  return {kind: 'replace', species: data.species, trait: data.trait, card: selected[0]};
   	else if (player === game.players[data.player]
   		&& (game.phase === 'FEED' || game.phase === 'ATTACK')

@@ -78,7 +78,7 @@ module.exports = function(data) {
 					}).length;
 					if (species.traits.length < 3 && !alreadyHas)
 					  moves.push({kind: 'trait', species: s, card: c});
-					if (!alreadyHas) species.traits.forEach(function(trait, t) {
+					if (!alreadyHas && species.traits.length === 3) species.traits.forEach(function(trait, t) {
 						moves.push({kind: 'replace', species: s, trait: t, card: c});
 					});
 				});
