@@ -57,9 +57,13 @@ module.exports = function(move, game) {
 				trait: move.trait
 			}
 		case 'done':
-			return move;
+			return {
+				kind: 'done'
+			};
 		case 'pass':
-			return move;
+			return {
+				kind: 'pass'
+			};
 		case 'attack':
 			return {
 				kind: 'attack',

@@ -10,6 +10,9 @@ module.exports = function(data) {
   var actions = rules.actions;
   var legal = require('../public/games/' + state.gameName + '/legal');
 
+  var seq = require('./sequence');
+  var turns = require('./turns');
+
 	var MongoClient = require('mongodb').MongoClient,
     assert = require('assert');
 
@@ -109,6 +112,10 @@ module.exports = function(data) {
       console.log("Connected succesfully to server");
 
       saveMoves(db, function() {
+        
+          // update sequence and turns collections
+          seq(state.gameName);
+          turns(state.gameName);
           db.close();
       });
     }

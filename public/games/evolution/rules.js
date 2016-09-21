@@ -137,7 +137,7 @@ var actions = {
     return game.finished;
   },
 
-  draw: function(game) {
+  draw: function(game, move) {
     if (game.deck.length) {
       var card = game.deck.pop();
       card.selected = false;
@@ -146,10 +146,16 @@ var actions = {
       return card;
     } 
     else {
-      game.deck = this.shuffle(game.discard);
+      if (move.shuffle) 
+        game.deck = move.shuffle;
+      else {
+        game.deck = this.shuffle(game.discard);
+        // store the results of the shuffle
+        move.shuffle = game.deck.slice(0);
+      }
       game.discard = [];
       game.lastTurn = true;
-      return this.draw(game);
+      return this.draw(game, move);
     }
   },
 
@@ -465,7 +471,7 @@ var actions = {
     if (game.currentPlayer === game.startPlayer) {
       game.phase = 'FEED';
       this.revealFoodCards(game);
-      return this.checkIfOthersCanEat(game);
+      return this.checkIfOthersCanEat(game, move);
     }
     return game;
   },
@@ -475,7 +481,7 @@ var actions = {
     var species = player.species[move.species];
     this.takeFood(species, player, move.species, 'regular', game);
     game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
-    return this.checkIfOthersCanEat(game);
+    return this.checkIfOthersCanEat(game, move);
   },
 
   attack: function(move, game) {
@@ -501,7 +507,7 @@ var actions = {
     defender.population--;
     if (!defender.population) {
       defender.traits.forEach(function() {
-        game.players[move.player].hand.push(this.draw(game));
+        game.players[move.player].hand.push(this.draw(game, move));
       }, this);
       game.players[move.player].food += defender.food;
       game.players[move.player].food += defender.fat;
@@ -509,7 +515,7 @@ var actions = {
     }
     if (!attacker.population) {
       attacker.traits.forEach(function() {
-        player.hand.push(this.draw(game));
+        player.hand.push(this.draw(game, move));
       }, this);
       player.food += attacker.food;
       player.food += attacker.fat;
@@ -540,7 +546,7 @@ var actions = {
       });
     }
     game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
-    return this.checkIfOthersCanEat(game);
+    return this.checkIfOthersCanEat(game, move);
   },
 
   pass: function(move, game) {
@@ -557,7 +563,7 @@ var actions = {
         });
       });
     }
-    return game.phase === 'INTELLIGENCE' ? this.checkIntelligence(game) : this.checkIfOthersCanEat(game);
+    return game.phase === 'INTELLIGENCE' ? this.checkIntelligence(game) : this.checkIfOthersCanEat(game, move);
   },
 
   intelligence: function(move, game) {
@@ -568,7 +574,7 @@ var actions = {
     player.hand.splice(move.card, 1);
     if (!this.hasTrait(species, 'carnivore')) {
       this.takeFood(species, player, move.species, 'intelligence', game);
-      return game.phase === 'INTELLIGENCE' ? this.checkIntelligence(game) : this.checkIfOthersCanEat(game);
+      return game.phase === 'INTELLIGENCE' ? this.checkIntelligence(game) : this.checkIfOthersCanEat(game, move);
     }
     else {
       species.attacking = true;
@@ -614,12 +620,12 @@ var actions = {
       game.players.forEach(function(player) {
         player.passedIntelligence = false;
       });
-      return this.checkIfOthersCanEat(game);
+      return this.checkIfOthersCanEat(game, move);
     }
     return game;
   },
 
-  checkIfOthersCanEat: function(game) {
+  checkIfOthersCanEat: function(game, move) {
     var cantMove = 0;
 
     while (!this.canEat(game.players[game.currentPlayer], game) && cantMove < game.players.length) {
@@ -627,7 +633,7 @@ var actions = {
       cantMove++;
     }
     if (cantMove === game.players.length)
-      return this.endTurn(game);
+      return this.endTurn(game, move);
     return game;
   },
 
