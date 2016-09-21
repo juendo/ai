@@ -261,7 +261,7 @@ var actions = {
     if (game.food < 0) game.food === 0;
   },
 
-  endTurn: function(game) {
+  endTurn: function(game, move) {
     game.players.forEach(function(player) {
       player.passedIntelligence = false;
       var extinct = [];
@@ -277,18 +277,18 @@ var actions = {
       var offset = 0;
       extinct.forEach(function(s) {
         player.species[s - offset].traits.forEach(function() {
-          player.hand.push(this.draw(game));
+          player.hand.push(this.draw(game, move));
         }, this);
         player.food += player.species[s - offset].food;
         player.food += player.species[s - offset].fat;
         //console.log(2, player.food);
         player.species.splice(s - offset++, 1);
       }, this);
-      player.hand.push(this.draw(game));
-      player.hand.push(this.draw(game));
-      player.hand.push(this.draw(game));
+      player.hand.push(this.draw(game, move));
+      player.hand.push(this.draw(game, move));
+      player.hand.push(this.draw(game, move));
       player.species.forEach(function() {
-        player.hand.push(this.draw(game));
+        player.hand.push(this.draw(game, move));
       }, this);
     }, this);
     game.startPlayer = (game.startPlayer + 1) % game.players.length;
