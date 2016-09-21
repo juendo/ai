@@ -1,7 +1,8 @@
 'use strict'
 
-var translateMove = require('../public/games/glory-to-rome/moves');
+var translateMove = require('../public/games/evolution/moves');
 var settings = require('./testSettings');
+var save = require('../db/save_moves.js');
 
 class AIPlayer {
   constructor(name, getMove) {
@@ -37,6 +38,10 @@ class AIMatch {
     this.actions.start(this.state);
 
     console.log(JSON.stringify(this.state));
+    var initial = JSON.parse(JSON.stringify(this.state));
+
+    var moves = [];
+
 
     while (!this.state.finished) {
 
@@ -46,6 +51,7 @@ class AIMatch {
       console.log(translateMove(move, this.state));
 
       this.actions.applyMove(move, this.state);
+      moves.push(move);
     }
 
     console.log('winner:');
@@ -53,6 +59,12 @@ class AIMatch {
     console.log(this.actions.winner(this.state).map(function(index) {
       return this.state.players[index].name;
     }, this));
+
+    save({
+      initial: initial,
+      moves: moves,
+      winner: this.actions.winner(this.state)
+    });
   }
 }
 
@@ -60,7 +72,7 @@ var moismcts = require('./moismcts');
 var random = require('./random');
 var game = require('./game');
 
-var rules = require('../public/games/glory-to-rome/rules');
+var rules = require('../public/games/evolution/rules');
 
 var frequency = require('../db/move_frequency');
 var sequence = require('../db/get_sequence');
@@ -87,7 +99,7 @@ sequence('glory-to-rome', function(seq) {
             var data = new GameData(freq, seq, turn, user, settings.length, setting);
 
             return new AIPlayer(setting.name, function(state) {
-              return moismcts.testMove(game(state), data);
+              return random.testMove(game(state), data);
             });
 
           }), JSON.parse(JSON.stringify(rules.state)));
