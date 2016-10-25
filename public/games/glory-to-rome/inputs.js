@@ -167,8 +167,8 @@ var inputs = {
       return {kind: 'vomitorium'};
     else if (action === 'Prison' && data.opponent !== game.currentPlayer)
       return {kind: 'prison', building: data.building, opponent: data.opponent, index: data.index};
-    else if (cards.length === 1 && action === 'Craftsman')
-      return {kind: 'fillFromHand', building: data.building, data: {index: cards[0], card: player.hand[cards[0]]}};
+    else if (cards.length === 1 && action === 'Craftsman' && data.opponent === game.currentPlayer)
+      return {kind: 'fillFromHand', building: data.index, data: {index: cards[0], card: player.hand[cards[0]]}};
 
   }
 }
