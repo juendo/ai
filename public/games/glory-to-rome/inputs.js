@@ -137,8 +137,12 @@ var inputs = {
     if (data.owner !== game.currentPlayer) return;
 
     if (action === 'Merchant')
-      return {kind: 'merchant', data: {index: data.index, material: player.stockpile[data.index]}
-    };
+      return {kind: 'merchant', data: {index: data.index, material: player.stockpile[data.index]}};
+    else if (action === 'Architect')
+      if (meta.stockpileSelected === data.index)
+        meta.stockpileSelected = -1;
+      else
+        meta.stockpileSelected = data.index;
   },
 
   pending: function(game, meta, data) {

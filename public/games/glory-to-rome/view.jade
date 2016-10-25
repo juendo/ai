@@ -182,7 +182,8 @@ block player
         ng-style='{\
           "background-color": "#" + colors[material],\
           "width": 83.333333 / player.stockpile.length + "%"\
-        }'
+        }',
+        ng-class='{ "stockpile-selected": $parent.$parent.$index === meta.you && meta.stockpileSelected === $index }'
       )
       .stockpile-spacing.end(
         ng-repeat-end='',

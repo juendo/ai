@@ -322,6 +322,10 @@ img.hand {
     display: inline-block;
     border-top-left-radius: 32%;
 }
+.stockpile-material.stockpile-selected {
+    border-top-right-radius: 0%;
+    border-top-left-radius: 0%;
+}
 .stockpile-spacing {
     max-width: 4px;
     height: 100%;
