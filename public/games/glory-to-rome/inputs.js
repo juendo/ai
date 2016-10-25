@@ -152,12 +152,23 @@ var inputs = {
 
   building: function(game, meta, data) {
 
-    var action = game.players[game.currentPlayer].actions[0].kind;
+    var player = game.players[game.currentPlayer];
+    var action = player.actions[0].kind;
+
+    var cards = [];
+    for (var i = 0; i < player.hand.length; i++) {
+      if (player.hand[i].selected) {
+        cards.push(i);
+      }
+    }
 
     if ((action === 'Lead' || action === 'Think' || action === 'Follow')
     && data.building.name === 'Vomitorium' && data.opponent === game.currentPlayer)
       return {kind: 'vomitorium'};
     else if (action === 'Prison' && data.opponent !== game.currentPlayer)
       return {kind: 'prison', building: data.building, opponent: data.opponent, index: data.index};
+    else if (cards.length === 1 && action === 'Craftsman')
+      return {kind: 'fillFromHand', building: data.building, data: {index: cards[0], card: player.hand[cards[0]]}};
+
   }
 }
