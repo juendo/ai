@@ -1176,6 +1176,7 @@ var actions = {
         }
       }
       player.usedSewer = false;
+      player.stockpileSelected = -1;
       return this.nextToAct(game);
     }
 

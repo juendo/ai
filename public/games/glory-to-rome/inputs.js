@@ -139,10 +139,10 @@ var inputs = {
     if (action === 'Merchant')
       return {kind: 'merchant', data: {index: data.index, material: player.stockpile[data.index]}};
     else if (action === 'Architect')
-      if (meta.stockpileSelected === data.index)
-        meta.stockpileSelected = -1;
+      if (player.stockpileSelected === data.index)
+        player.stockpileSelected = -1;
       else
-        meta.stockpileSelected = data.index;
+        player.stockpileSelected = data.index;
   },
 
   pending: function(game, meta, data) {
@@ -173,6 +173,8 @@ var inputs = {
       return {kind: 'prison', building: data.building, opponent: data.opponent, index: data.index};
     else if (cards.length === 1 && action === 'Craftsman' && data.opponent === game.currentPlayer)
       return {kind: 'fillFromHand', building: data.index, data: {index: cards[0], card: player.hand[cards[0]]}};
+    else if (player.stockpileSelected >= 0 && action === 'Architect' && data.opponent === game.currentPlayer)
+      return {kind: 'fillFromStockpile', building: data.index, data: {index: player.stockpileSelected, material: player.hand[player.stockpileSelected]}, player: data.opponent};
 
   }
 }
