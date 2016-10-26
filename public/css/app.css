@@ -16,7 +16,7 @@ body {
     user-select: none;
     cursor: default;
 }
-.deck, .jack, .hand, .population, .tracker, .track-interior, .track-box, .trait, .species {
+.deck, .jack, .hand, .population, .tracker, .track-interior, .track-box, .trait, .species, .stockpile-material, .building {
     cursor: pointer;
 }
 .public {
