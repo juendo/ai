@@ -237,9 +237,12 @@ var actions = {
   },
 
   jackNum: function(player) {
-    return player.hand.filter(function(card) {
-      card.name === 'Jack';
-    }).length;
+    var jacks = 0;
+    player.hand.forEach(function(card) {
+      if (card.name === 'Jack')
+        jacks++;
+    });
+    return jacks;
   },
 
   score: function(player) {
