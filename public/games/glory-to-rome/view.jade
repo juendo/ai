@@ -14,7 +14,9 @@ block heading
           | {{ actions.influence(player) }} 
       br
       span(style='color:#AAA')
-          | {{ player.hand.length }} CARDS
+          | {{ player.hand.length }} 
+      span(style='color:#777')
+          | {{ actions.jackNum(player) }}
   .player-action-container
       .player-action(
         ng-style='{\

@@ -236,6 +236,12 @@ var actions = {
     return has;
   },
 
+  jackNum: function(player) {
+    return player.hand.filter(function(card) {
+      card.name === 'Jack';
+    }).length;
+  },
+
   score: function(player) {
     var vaultPoints = 0;
     player.vault.forEach(function(material) {

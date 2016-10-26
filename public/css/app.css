@@ -323,8 +323,9 @@ img.hand {
     border-top-left-radius: 32%;
 }
 .stockpile-material.stockpile-selected {
-    border-top-right-radius: 0%;
-    border-top-left-radius: 0%;
+    border: solid;
+    border-color: #222;
+    border-bottom: none;
 }
 .stockpile-spacing {
     max-width: 4px;
