@@ -177,7 +177,7 @@ block player
       .stockpile-material(
         ng-if='player.stockpile.length > 0',
         ng-repeat-start='material in player.stockpile track by $index',
-        ng-drag='$parent.$parent.$index == meta.you',
+        ng-drag='false',
         ng-drag-data='{\
           index: $index,\
           material: material\
@@ -209,7 +209,7 @@ block bottom
   )
     img.hand(
       ng-hover-card
-      ng-drag='true', 
+      ng-drag='false', 
       ng-drag-data='{\
         index: $index,\
         card: c\
