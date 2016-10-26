@@ -4,20 +4,20 @@ block heading
   .player-name
       span(style='color:#F7B628')
           | {{ $index == game.leader ? 'L ' : '' }}
-      span(style='color:#AAA')
+      span(style='color:#777')
           | {{ $index == game.leader ? '| ' : '' }}
       span(style='color:#FFF')
           | {{ player.name.toUpperCase() }} 
-      span(style='color:#AAA')
+      span(style='color:#777')
           | | 
       span(style='color:#FFF')
           | {{ actions.influence(player) }} 
       br
-      span(style='color:#AAA')
-          | {{ player.hand.length - actions.jackNum(player) }}
       span(style='color:#FFF')
-          | /
+          | {{ player.hand.length - actions.jackNum(player) }}
       span(style='color:#777')
+          | |
+      span(style='color:#AAA')
           | {{ actions.jackNum(player) }}
   .player-action-container
       .player-action(
