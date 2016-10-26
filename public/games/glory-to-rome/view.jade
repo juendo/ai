@@ -14,7 +14,9 @@ block heading
           | {{ actions.influence(player) }} 
       br
       span(style='color:#AAA')
-          | {{ player.hand.length }} 
+          | {{ player.hand.length - actions.jackNum(player) }}
+      span(style='color:#FFF')
+          | /
       span(style='color:#777')
           | {{ actions.jackNum(player) }}
   .player-action-container
