@@ -28,11 +28,11 @@ html
 
                     div(class='col-sm-12')
                       - var value = form.data ? form.data.login : '';
-                      input.form-control(autofocus='true', placeholder='Username or Email', required=true, name='login', type='text')
+                      input(autofocus='true', placeholder='Username or Email', required=true, name='login', type='text')
 
                   .form-group.group-password
                     div(class='col-sm-12')
-                      input.form-control(placeholder='Password', required=true, type='password', name='password')
+                      input(placeholder='Password', required=true, type='password', name='password')
 
                   div
                     button.login.btn.btn-login.btn-sp-green(type='submit', class='col-sm-12') Log in
