@@ -375,7 +375,8 @@ img.hand {
     right: 20%;
 }
 .pool-counter {
-    width: 45%;
+    -webkit-appearance:none;
+    width: 50%;
     height: 33.333%;
     float: left;
     text-align: center;
