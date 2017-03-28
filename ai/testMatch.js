@@ -1,7 +1,8 @@
 'use strict'
 
-var translateMove = require('../public/games/glory-to-rome/moves');
+var translateMove = require('../public/games/manifesto/moves');
 var settings = require('./testSettings');
+var save = require('../db/save_moves.js');
 
 class AIPlayer {
   constructor(name, getMove) {
@@ -30,13 +31,19 @@ class AIMatch {
     
     var rules = require('../public/games/' + state.gameName + '/rules');
     this.actions = rules.actions;
-  }
-
-  run() {
 
     this.actions.start(this.state);
 
     console.log(JSON.stringify(this.state));
+    this.initial = JSON.parse(JSON.stringify(this.state));
+  }
+
+  run() {
+
+    this.state = JSON.parse(JSON.stringify(this.initial));
+    var initial = JSON.parse(JSON.stringify(this.state));
+
+    var moves = [];
 
     while (!this.state.finished) {
 
@@ -46,6 +53,8 @@ class AIMatch {
       console.log(translateMove(move, this.state));
 
       this.actions.applyMove(move, this.state);
+      console.log(this.state.electorate);
+      moves.push(move);
     }
 
     console.log('winner:');
@@ -53,6 +62,14 @@ class AIMatch {
     console.log(this.actions.winner(this.state).map(function(index) {
       return this.state.players[index].name;
     }, this));
+
+    console.log(this.state.electorate);
+
+    //save({
+    //  initial: initial,
+    //  moves: moves,
+    //  winner: this.actions.winner(this.state)
+    //});
   }
 }
 
@@ -60,7 +77,7 @@ var moismcts = require('./moismcts');
 var random = require('./random');
 var game = require('./game');
 
-var rules = require('../public/games/glory-to-rome/rules');
+var rules = require('../public/games/manifesto/rules');
 
 var frequency = require('../db/move_frequency');
 var sequence = require('../db/get_sequence');
@@ -78,22 +95,25 @@ sequence('glory-to-rome', function(seq) {
 
       user('glory-to-rome', ['Delargsson', 'Hendo'], function(user) {
 
-        var n = 60;
+        //var n = 60;
 
-        while (n--) {
+        //while (n--) {
 
           var match = new AIMatch(settings.map(function(setting) {
 
             var data = new GameData(freq, seq, turn, user, settings.length, setting);
 
             return new AIPlayer(setting.name, function(state) {
-              return moismcts.testMove(game(state), data);
+              return random.testMove(game(state), data);
             });
 
           }), JSON.parse(JSON.stringify(rules.state)));
           
-          match.run();
-        }
+          var n = 60;
+
+          while (n--)
+            match.run();
+        //}
       });
     });
   });

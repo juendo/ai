@@ -137,8 +137,12 @@ var inputs = {
     if (data.owner !== game.currentPlayer) return;
 
     if (action === 'Merchant')
-      return {kind: 'merchant', data: {index: data.index, material: player.stockpile[data.index]}
-    };
+      return {kind: 'merchant', data: {index: data.index, material: player.stockpile[data.index]}};
+    else if (action === 'Architect')
+      if (player.stockpileSelected === data.index)
+        player.stockpileSelected = -1;
+      else
+        player.stockpileSelected = data.index;
   },
 
   pending: function(game, meta, data) {
@@ -152,12 +156,25 @@ var inputs = {
 
   building: function(game, meta, data) {
 
-    var action = game.players[game.currentPlayer].actions[0].kind;
+    var player = game.players[game.currentPlayer];
+    var action = player.actions[0].kind;
+
+    var cards = [];
+    for (var i = 0; i < player.hand.length; i++) {
+      if (player.hand[i].selected) {
+        cards.push(i);
+      }
+    }
 
     if ((action === 'Lead' || action === 'Think' || action === 'Follow')
     && data.building.name === 'Vomitorium' && data.opponent === game.currentPlayer)
       return {kind: 'vomitorium'};
     else if (action === 'Prison' && data.opponent !== game.currentPlayer)
       return {kind: 'prison', building: data.building, opponent: data.opponent, index: data.index};
+    else if (cards.length === 1 && action === 'Craftsman' && data.opponent === game.currentPlayer)
+      return {kind: 'fillFromHand', building: data.index, data: {index: cards[0], card: player.hand[cards[0]]}};
+    else if (player.stockpileSelected >= 0 && action === 'Architect' && data.opponent === game.currentPlayer)
+      return {kind: 'fillFromStockpile', building: data.index, data: {index: player.stockpileSelected, material: player.stockpile[player.stockpileSelected]}, player: data.opponent};
+
   }
 }

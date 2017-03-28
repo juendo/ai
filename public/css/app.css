@@ -16,7 +16,7 @@ body {
     user-select: none;
     cursor: default;
 }
-.deck, .jack, .hand, .population, .tracker, .track-interior, .track-box, .trait, .species {
+.deck, .jack, .hand, .population, .tracker, .track-interior, .track-box, .trait, .species, .stockpile-material, .building {
     cursor: pointer;
 }
 .public {
@@ -321,6 +321,11 @@ img.hand {
     border-top-right-radius: 32%;
     display: inline-block;
     border-top-left-radius: 32%;
+}
+.stockpile-material.stockpile-selected {
+    border: solid;
+    border-color: #222;
+    border-bottom: none;
 }
 .stockpile-spacing {
     max-width: 4px;

@@ -236,6 +236,15 @@ var actions = {
     return has;
   },
 
+  jackNum: function(player) {
+    var jacks = 0;
+    player.hand.forEach(function(card) {
+      if (card.name === 'Jack')
+        jacks++;
+    });
+    return jacks;
+  },
+
   score: function(player) {
     var vaultPoints = 0;
     player.vault.forEach(function(material) {
@@ -1176,6 +1185,7 @@ var actions = {
         }
       }
       player.usedSewer = false;
+      player.stockpileSelected = -1;
       return this.nextToAct(game);
     }
 

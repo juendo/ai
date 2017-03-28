@@ -4,17 +4,21 @@ block heading
   .player-name
       span(style='color:#F7B628')
           | {{ $index == game.leader ? 'L ' : '' }}
-      span(style='color:#AAA')
+      span(style='color:#777')
           | {{ $index == game.leader ? '| ' : '' }}
       span(style='color:#FFF')
           | {{ player.name.toUpperCase() }} 
-      span(style='color:#AAA')
+      span(style='color:#777')
           | | 
       span(style='color:#FFF')
           | {{ actions.influence(player) }} 
       br
+      span(style='color:#FFF')
+          | {{ player.hand.length - actions.jackNum(player) }} 
+      span(style='color:#777')
+          | | 
       span(style='color:#AAA')
-          | {{ player.hand.length }} CARDS
+          | {{ actions.jackNum(player) }}
   .player-action-container
       .player-action(
         ng-style='{\
@@ -173,7 +177,7 @@ block player
       .stockpile-material(
         ng-if='player.stockpile.length > 0',
         ng-repeat-start='material in player.stockpile track by $index',
-        ng-drag='$parent.$parent.$index == meta.you',
+        ng-drag='false',
         ng-drag-data='{\
           index: $index,\
           material: material\
@@ -182,7 +186,8 @@ block player
         ng-style='{\
           "background-color": "#" + colors[material],\
           "width": 83.333333 / player.stockpile.length + "%"\
-        }'
+        }',
+        ng-class='{ "stockpile-selected": $parent.$parent.$index === meta.you && player.stockpileSelected === $index }'
       )
       .stockpile-spacing.end(
         ng-repeat-end='',
@@ -204,7 +209,7 @@ block bottom
   )
     img.hand(
       ng-hover-card
-      ng-drag='true', 
+      ng-drag='false', 
       ng-drag-data='{\
         index: $index,\
         card: c\
