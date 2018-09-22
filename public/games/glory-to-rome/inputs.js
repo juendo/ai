@@ -173,7 +173,7 @@ var inputs = {
       return {kind: 'prison', building: data.building, opponent: data.opponent, index: data.index};
     else if (cards.length === 1 && action === 'Craftsman' && data.opponent === game.currentPlayer)
       return {kind: 'fillFromHand', building: data.index, data: {index: cards[0], card: player.hand[cards[0]]}};
-    else if (player.stockpileSelected >= 0 && action === 'Architect' && data.opponent === game.currentPlayer)
+    else if (player.stockpileSelected >= 0 && action === 'Architect')
       return {kind: 'fillFromStockpile', building: data.index, data: {index: player.stockpileSelected, material: player.stockpile[player.stockpileSelected]}, player: data.opponent};
 
   }

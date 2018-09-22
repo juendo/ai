@@ -163,6 +163,8 @@ var actions = {
     game.leader = Math.floor(Math.random() * (game.players.length));
     game.currentPlayer = game.leader;
     game.players[game.currentPlayer].actions.push({kind:'Lead', description:'LEAD or THINK'});
+    // REMOVE BELOW
+    game.players[0].buildings.push({name:'Stairway', done:true});
     return game;
   },
 
