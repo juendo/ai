@@ -164,7 +164,7 @@ var actions = {
     game.currentPlayer = game.leader;
     game.players[game.currentPlayer].actions.push({kind:'Lead', description:'LEAD or THINK'});
     // REMOVE BELOW
-    game.players[0].buildings.push({name:'Stairway', done:true, color:'purple', siteColor:'purple', materials: ['purple', 'purple', 'purple']});
+    game.players[0].buildings.push({name:'Prison', done:false, color:'blue', siteColor:'blue', materials: ['blue', 'blue']});
     return game;
   },
 
