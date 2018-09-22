@@ -129,6 +129,7 @@ app.get('/favicon.ico', function(req, res) {
 
 // serve index and view partials
 app.get('/:game', /*stormpath.loginRequired,*/ oidc.ensureAuthenticated(), function(req, res) {
+  console.log(req.userinfo);
 
     // render template and store the result in html variable
     res.render('public/games/' + req.params.game + '/view', {
@@ -175,3 +176,6 @@ oidc.on('ready', () => {
 });
 //});
 
+oidc.on('error', err => {
+  console.log('Unable to configure ExpressOIDC', err);
+});
