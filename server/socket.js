@@ -51,8 +51,7 @@ module.exports = function (nsp) {
 
     socket.on('create', function(name) {
       if (
-          name.length > 0 
-      &&  name.length <= 10) 
+          name.length > 0) 
       {
         var gameid = (Math.random().toString(36)+'00000000000000000').slice(2, 8);
         while (nsp.adapter.rooms[gameid]) {
@@ -82,7 +81,7 @@ module.exports = function (nsp) {
           gamesList.gamePlayers[data.room]
       &&  nsp.adapter.rooms[data.room] 
       &&  Object.keys(nsp.adapter.rooms[data.room]).length < data.max
-      &&  data.name.length > 0 && data.name.length <= 10) 
+      &&  data.name.length > 0) 
       {
         socket.join(data.room);
         gamesList.gamePlayers[data.room].push(data.name);
