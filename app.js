@@ -157,6 +157,10 @@ Object.keys(games).forEach(function(name) {
   nsp.on('connection', socketServer);
 });
 
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
 
 /**
  * Start Server
