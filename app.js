@@ -44,15 +44,7 @@ app.use(multer());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-const session = require('express-session');
 const { ExpressOIDC } = require('@okta/oidc-middleware');
-
-// session support is required to use ExpressOIDC
-app.use(session({
-  secret: 'this should be secure',
-  resave: true,
-  saveUninitialized: false
-}));
 
 const oidc = new ExpressOIDC({
   issuer: 'https://dev-807578.oktapreview.com/oauth2/default',
