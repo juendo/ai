@@ -3,7 +3,7 @@
  * Module dependencies
  */
 var express = require('express');
-var stormpath = require('express-stormpath');
+//var stormpath = require('express-stormpath');
 var logger = require('morgan');
 var methodOverride = require('method-override');
 var session = require('express-session');
@@ -44,7 +44,7 @@ app.use(multer());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(stormpath.init(app, {
+/*app.use(stormpath.init(app, {
   preRegistrationHandler: function (formData, req, res, next) {
     if (formData.username.length > 10) return next(new Error('Username can\'t be longer than 10 characters.'));
     next();
@@ -94,7 +94,7 @@ app.use(stormpath.init(app, {
       view: path.join(__dirname,'views','register.jade')
     }
   }
-}));
+}));*/
 
 /**
  * Routes
@@ -102,7 +102,7 @@ app.use(stormpath.init(app, {
 
 var games = require('./games.js');
 
-app.get('/', stormpath.getUser, function(req, res) {
+app.get('/', /*stormpath.getUser,*/ function(req, res) {
   res.render('views/main', {
     games: games,
     user: req.user
@@ -114,7 +114,7 @@ app.get('/favicon.ico', function(req, res) {
 });
 
 // serve index and view partials
-app.get('/:game', stormpath.loginRequired, function(req, res) {
+app.get('/:game', /*stormpath.loginRequired,*/ function(req, res) {
 
     // render template and store the result in html variable
     res.render('public/games/' + req.params.game + '/view', {
@@ -153,9 +153,9 @@ server.listen(app.get('port'), function () {
   console.log('Express server listening on port ' + app.get('port'));
 });*/
 
-app.on('stormpath.ready', function() {
+//app.on('stormpath.ready', function() {
   server.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));
   });
-});
+//});
 
