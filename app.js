@@ -116,11 +116,10 @@ app.use(oidc.router);
 var games = require('./games.js');
 
 app.get('/', function(req, res) {
-  console.log(req);
-  console.log(req.userinfo);
+  console.log(req.userContext.userinfo);
   res.render('views/main', {
     games: games,
-    user: req.userinfo
+    user: req.userContext.userinfo
   });
 });
 
@@ -144,7 +143,7 @@ app.get('/:game', /*stormpath.loginRequired,*/ oidc.ensureAuthenticated(), funct
             active: games[req.params.game].active,
             inactive: games[req.params.game].inactive,
             view: html,
-            username: req.userinfo.name
+            username: req.userContext.userinfo.name
         });
 
     });
