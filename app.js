@@ -116,6 +116,8 @@ app.use(oidc.router);
 var games = require('./games.js');
 
 app.get('/', function(req, res) {
+  console.log(req);
+  console.log(req.userinfo);
   res.render('views/main', {
     games: games,
     user: req.userinfo
