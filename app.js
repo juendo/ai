@@ -116,11 +116,9 @@ app.use(oidc.router);
 var games = require('./games.js');
 
 app.get('/', function(req, res) {
-  console.log(req);
-  console.log(req.userinfo);
   res.render('views/main', {
     games: games,
-    user: req.user
+    user: req.userinfo
   });
 });
 
@@ -130,8 +128,6 @@ app.get('/favicon.ico', function(req, res) {
 
 // serve index and view partials
 app.get('/:game', /*stormpath.loginRequired,*/ oidc.ensureAuthenticated(), function(req, res) {
-  console.log(req.userinfo);
-
     // render template and store the result in html variable
     res.render('public/games/' + req.params.game + '/view', {
         color: games[req.params.game].color,
@@ -146,7 +142,7 @@ app.get('/:game', /*stormpath.loginRequired,*/ oidc.ensureAuthenticated(), funct
             active: games[req.params.game].active,
             inactive: games[req.params.game].inactive,
             view: html,
-            username: req.user.username
+            username: req.userinfo.name
         });
 
     });
