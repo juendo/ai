@@ -30,7 +30,7 @@ app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 app.use(methodOverride());
-app.use(session({ resave: true, saveUninitialized: true, 
+app.use(session({ resave: true, saveUninitialized: false, 
                   secret: 'uwotm8' }));
 
 // parse application/json
