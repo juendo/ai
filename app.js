@@ -44,6 +44,27 @@ app.use(multer());
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+const session = require('express-session');
+const { ExpressOIDC } = require('@okta/oidc-middleware');
+
+// session support is required to use ExpressOIDC
+app.use(session({
+  secret: 'this should be secure',
+  resave: true,
+  saveUninitialized: false
+}));
+
+const oidc = new ExpressOIDC({
+  issuer: 'https://dev-807578.oktapreview.com/oauth2/default',
+  client_id: '0oagcbm7rlPEjJGbL0h7',
+  client_secret: 'nrJ6Z5HHmihAO0gM2mjjJlY7m1oNuz4rnxqp1BYU',
+  redirect_uri: 'http://glorytoromeonline.herokuapp.com/authorization-code/callback',
+  scope: 'openid profile'
+});
+
+// ExpressOIDC will attach handlers for the /login and /authorization-code/callback routes
+app.use(oidc.router);
+
 /*app.use(stormpath.init(app, {
   preRegistrationHandler: function (formData, req, res, next) {
     if (formData.username.length > 10) return next(new Error('Username can\'t be longer than 10 characters.'));
@@ -102,7 +123,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 var games = require('./games.js');
 
-app.get('/', /*stormpath.getUser,*/ function(req, res) {
+app.get('/', function(req, res) {
+  console.log(req.userinfo);
   res.render('views/main', {
     games: games,
     user: req.user
@@ -114,7 +136,7 @@ app.get('/favicon.ico', function(req, res) {
 });
 
 // serve index and view partials
-app.get('/:game', /*stormpath.loginRequired,*/ function(req, res) {
+app.get('/:game', /*stormpath.loginRequired,*/ oidc.ensureAuthenticated(), function(req, res) {
 
     // render template and store the result in html variable
     res.render('public/games/' + req.params.game + '/view', {
@@ -154,8 +176,10 @@ server.listen(app.get('port'), function () {
 });*/
 
 //app.on('stormpath.ready', function() {
+oidc.on('ready', () => {
   server.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));
   });
+});
 //});
 

@@ -6,6 +6,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "@okta/oidc-middleware": "^1.0.0",
     "angular": "^1.5.5",
     "async": "^2.0.1",
     "body-parser": "1.8",
