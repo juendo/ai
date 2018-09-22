@@ -157,7 +157,7 @@ Object.keys(games).forEach(function(name) {
   nsp.on('connection', socketServer);
 });
 
-app.get('/logout', (req, res) => {
+app.post('/logout', (req, res) => {
   req.logout();
   res.redirect('/');
 });
